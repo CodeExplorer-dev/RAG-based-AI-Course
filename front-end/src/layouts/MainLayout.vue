@@ -27,10 +27,6 @@
            <el-icon><Share /></el-icon>
            <span>知识图谱</span>
          </el-menu-item>
-         <el-menu-item index="/learning-path">
-           <el-icon><TrendCharts /></el-icon>
-           <span>学习路径</span>
-         </el-menu-item>
          <el-menu-item index="/statistics">
            <el-icon><DataAnalysis /></el-icon>
            <span>提问统计</span>
@@ -67,7 +63,7 @@
  import { useUserStore } from '../stores/user'
  import {
    Notebook, FolderOpened, ChatDotRound, Share,
-   TrendCharts, DataAnalysis, Fold, UserFilled
+   DataAnalysis, Fold, UserFilled
  } from '@element-plus/icons-vue'
  
  const route = useRoute()

@@ -37,12 +37,6 @@
          meta: { title: '知识图谱', icon: 'Share' }
        },
        {
-         path: 'learning-path/:courseId?',
-         name: 'LearningPath',
-         component: () => import('../views/LearningPathView.vue'),
-         meta: { title: '学习路径', icon: 'TrendCharts' }
-       },
-       {
          path: 'statistics',
          name: 'Statistics',
          component: () => import('../views/StatisticsView.vue'),
