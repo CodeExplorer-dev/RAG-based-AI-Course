@@ -102,7 +102,10 @@
      } else {
        await userStore.login({ username: form.username, password: form.password })
        ElMessage.success('登录成功')
-       router.push('/')
+       const role = userStore.userInfo?.role
+       if (role === 'admin') router.push('/admin/dashboard')
+       else if (role === 'teacher') router.push('/teacher/dashboard')
+       else router.push('/courses')
      }
    } finally {
      loading.value = false
