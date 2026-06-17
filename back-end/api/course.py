@@ -25,6 +25,7 @@ def list_courses():
             info['student_count'] = UserCourse.query.filter_by(
                 course_id=course.id, role='student'
             ).count()
+            info['courseware_count'] = course.coursewares.count()
             courses_data.append(info)
 
     return jsonify({'code': 200, 'message': 'success', 'data': {'courses': courses_data}}), 200
@@ -147,3 +148,31 @@ def list_students(course_id):
         })
 
     return jsonify({'code': 200, 'message': 'success', 'data': {'students': students}}), 200
+
+
+@course_bp.route('/<int:course_id>', methods=['DELETE'])
+@jwt_required()
+def delete_course(course_id):
+    """删除课程（仅创建者/管理员）"""
+    user_id = int(get_jwt_identity())
+    user = db.session.get(User, user_id)
+    course = db.session.get(Course, course_id)
+
+    if not course:
+        raise NotFoundError('课程不存在')
+
+    # 仅课程创建者或管理员可删除
+    if course.teacher_id != user_id and user.role != 'admin':
+        return jsonify({'code': 403, 'message': '无权限删除该课程', 'data': None}), 403
+
+    # 删除关联数据：选课记录、课件（含分块）、课程
+    UserCourse.query.filter_by(course_id=course_id).delete()
+    from models import Courseware, DocumentChunk
+    coursewares = Courseware.query.filter_by(course_id=course_id).all()
+    for cw in coursewares:
+        DocumentChunk.query.filter_by(courseware_id=cw.id).delete()
+        db.session.delete(cw)
+    db.session.delete(course)
+    db.session.commit()
+
+    return jsonify({'code': 200, 'message': '课程已删除', 'data': None}), 200

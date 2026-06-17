@@ -24,7 +24,7 @@
                  clearable
                  style="width:100%"
                >
-                 <el-option v-for="c in courses" :key="c.id" :label="c.name" :value="c.id" />
+                 <el-option v-for="c in courses" :key="c.id" :label="c.course_name" :value="c.id" />
                </el-select>
              </el-form-item>
              <el-form-item>
@@ -84,8 +84,8 @@
        request.get('/api/courses'),
        request.get('/api/ask-teacher/mine')
      ])
-     courses.value = cRes.courses || []
-     myQuestions.value = qRes.questions || []
+     courses.value = cRes.data?.courses || []
+     myQuestions.value = qRes.data?.questions || []
    } catch { /* ignore */ }
  })
  
@@ -100,7 +100,7 @@
      ElMessage.success('问题已提交，等待老师回复')
      form.value = { title: '', course_id: '', content: '' }
      const qRes = await request.get('/api/ask-teacher/mine')
-     myQuestions.value = qRes.questions || []
+     myQuestions.value = qRes.data?.questions || []
    } finally { submitting.value = false }
  }
  </script>
