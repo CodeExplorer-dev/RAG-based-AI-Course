@@ -1,4 +1,4 @@
- <template>
+﻿ <template>
    <div class="ask-page">
      <div class="page-head">
        <h2 class="page-title">向老师提问</h2>
@@ -45,7 +45,14 @@
        </el-col>
        <el-col :span="10">
          <el-card shadow="never" class="history-card">
-           <template #header><span>我的提问历史</span></template>
+           <template #header>
+             <div style="display: flex; align-items: center; justify-content: space-between;">
+               <span>我的提问历史</span>
+               <el-button v-if="myQuestions.length" text type="danger" size="small" :loading="clearing" @click="clearAll">
+                 <el-icon><Delete /></el-icon> 一键清除
+               </el-button>
+             </div>
+           </template>
            <div v-if="myQuestions.length" class="history-list">
              <div v-for="q in myQuestions" :key="q.id" class="history-item">
                <div class="history-title">{{ q.title }}</div>
@@ -90,7 +97,19 @@ import { formatTime } from '../utils/formatTime'
    } catch { /* ignore */ }
  })
  
- async function submitQuestion() {
+ const clearing = ref(false)
+
+async function clearAll() {
+  if (myQuestions.value.length === 0) return
+  clearing.value = true
+  try {
+    await request.delete('/api/ask-teacher/mine')
+    ElMessage.success('已清空所有提问')
+    myQuestions.value = []
+  } finally { clearing.value = false }
+}
+
+async function submitQuestion() {
    if (!form.value.title || !form.value.content) {
      ElMessage.warning('请填写问题标题和内容')
      return
