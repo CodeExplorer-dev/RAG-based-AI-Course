@@ -5,11 +5,11 @@
 -- ============================================================
 
 -- 创建数据库
-CREATE DATABASE IF NOT EXISTS rag_ai_course
+CREATE DATABASE IF NOT EXISTS rag_course_ai
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_unicode_ci;
 
-USE rag_ai_course;
+USE rag_course_ai;
 
 -- ============================================================
 -- 1. 用户表 (users)

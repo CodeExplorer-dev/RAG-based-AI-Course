@@ -1,8 +1,12 @@
 """应用配置类"""
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# 加载 .env 文件
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 class Config:
@@ -33,17 +37,7 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
 
-    # ChromaDB
-    CHROMA_PERSIST_DIR = os.path.join(BASE_DIR, 'chroma_data')
-
-    # LLM API（兼容 OpenAI 格式）
-    LLM_API_KEY = os.environ.get('LLM_API_KEY', 'sk-xxx')
-    LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')
-    LLM_MODEL = os.environ.get('LLM_MODEL', 'gpt-3.5-turbo')
-    EMBEDDING_MODEL = os.environ.get('EMBEDDING_MODEL', 'text-embedding-3-small')
-
-    # RAG 参数
-    RAG_TOP_K = 5
+    # 文档分块参数
     CHUNK_SIZE = 500
     CHUNK_OVERLAP = 50
 
