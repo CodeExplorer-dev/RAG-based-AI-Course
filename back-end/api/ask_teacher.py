@@ -52,11 +52,22 @@ def submit_question():
 
 # ─── 我的提问 ────────────────────────────────────────────
 
-@ask_teacher_bp.route('/mine', methods=['GET'])
+@ask_teacher_bp.route('/mine', methods=['GET', 'DELETE'])
 @jwt_required()
 def my_questions():
-    """获取当前用户的提问列表"""
+    """获取/清空当前用户的提问列表"""
+    from flask import request
     user_id = int(get_jwt_identity())
+
+    if request.method == 'DELETE':
+        Question.query.filter_by(student_id=user_id).delete()
+        db.session.commit()
+        return jsonify({
+            'code': 200,
+            'message': '已清空所有提问',
+            'data': None
+        }), 200
+
     questions = Question.query.filter_by(student_id=user_id)\
         .order_by(Question.created_at.desc()).all()
 
@@ -162,4 +173,8 @@ def answer_question(question_id):
         'message': '回答成功',
         'data': question.to_dict()
     }), 200
+
+
+# ─── 清空我的提问 ─────────────────────────────────────
+
 
