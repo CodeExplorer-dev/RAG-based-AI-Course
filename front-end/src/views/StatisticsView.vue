@@ -69,7 +69,7 @@
    justify-content: space-between;
    margin-bottom: 24px;
  }
- .page-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0; }
+ .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0; }
  .stats-grid {
    display: grid;
    grid-template-columns: repeat(3, 1fr);
@@ -97,7 +97,7 @@
    flex-shrink: 0;
  }
  .stat-value { font-size: 28px; font-weight: 700; color: #1d2129; line-height: 1.2; }
- .stat-label { font-size: 13px; color: #86909c; margin-top: 4px; }
+ .stat-label { font-size: 17px; color: #86909c; margin-top: 4px; }
  .rank-section {
    background: linear-gradient(135deg, #fff 0%, #fafcff 100%);
    border-radius: 8px;
@@ -105,7 +105,7 @@
    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
    border: 1px solid rgba(91,141,239,0.08);
  }
- .rank-title { font-size: 16px; font-weight: 600; color: #1d2129; margin: 0 0 16px; }
+ .rank-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0 0 16px; }
  .rank-list { margin: 0; }
  .rank-item {
    display: flex;
@@ -122,7 +122,7 @@
    display: flex;
    align-items: center;
    justify-content: center;
-   font-size: 12px;
+   font-size: 16px;
    font-weight: 600;
    color: #86909c;
    margin-right: 12px;
@@ -134,6 +134,6 @@
  }
  .rank-item:nth-child(2) .rank-badge.top { background: #909399; }
  .rank-item:nth-child(3) .rank-badge.top { background: #cd7f32; }
- .rank-text { flex: 1; font-size: 14px; color: #1d2129; }
- .rank-count { font-size: 13px; color: #86909c; flex-shrink: 0; }
+ .rank-text { flex: 1; font-size: 18px; color: #1d2129; }
+ .rank-count { font-size: 17px; color: #86909c; flex-shrink: 0; }
  </style>

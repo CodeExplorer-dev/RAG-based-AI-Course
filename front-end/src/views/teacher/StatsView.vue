@@ -77,8 +77,8 @@
  <style scoped>
  .ts-page { padding: 0; }
  .page-head { margin-bottom: 20px; }
- .page-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0; }
+ .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0; }
  .reply-popover { padding: 4px; }
- .reply-question { font-size: 13px; color: #86909c; background: #f7f8fa; padding: 8px 12px; border-radius: 6px; margin: 0 0 12px; }
- .replied-text { font-size: 13px; color: #67c23a; }
+ .reply-question { font-size: 17px; color: #86909c; background: #f7f8fa; padding: 8px 12px; border-radius: 6px; margin: 0 0 12px; }
+ .replied-text { font-size: 17px; color: #67c23a; }
  </style>

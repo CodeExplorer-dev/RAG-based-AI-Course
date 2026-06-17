@@ -66,16 +66,16 @@
  <style scoped>
  .dashboard-page { padding: 0; }
  .page-head { margin-bottom: 24px; }
- .page-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0 0 4px; }
- .page-desc { font-size: 14px; color: #86909c; }
+ .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0 0 4px; }
+ .page-desc { font-size: 18px; color: #86909c; }
  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
  .stat-card { background: #fff; border-radius: 8px; padding: 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: box-shadow 0.2s; }
  .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
  .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
- .stat-value { font-size: 24px; font-weight: 700; color: #1d2129; line-height: 1.2; }
- .stat-label { font-size: 13px; color: #86909c; margin-top: 4px; }
+ .stat-value { font-size: 28px; font-weight: 700; color: #1d2129; line-height: 1.2; }
+ .stat-label { font-size: 17px; color: #86909c; margin-top: 4px; }
  .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
  .action-card { background: #fff; border-radius: 8px; padding: 28px 20px; text-align: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: box-shadow 0.2s, transform 0.2s; }
  .action-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
- .action-card span { display: block; margin-top: 12px; font-size: 14px; font-weight: 500; color: #1d2129; }
+ .action-card span { display: block; margin-top: 12px; font-size: 18px; font-weight: 500; color: #1d2129; }
  </style>

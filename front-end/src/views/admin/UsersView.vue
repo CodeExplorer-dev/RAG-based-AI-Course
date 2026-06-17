@@ -74,5 +74,5 @@
  <style scoped>
  .au-page { padding: 0; }
  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
- .page-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0; }
+ .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0; }
  </style>

@@ -108,14 +108,14 @@
  <style scoped>
  .ask-page { padding: 0; }
  .page-head { margin-bottom: 20px; }
- .page-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0; }
+ .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0; }
  .ask-card, .history-card { border-radius: 8px; }
  .history-list { max-height: 500px; overflow-y: auto; }
  .history-item { padding: 14px 0; border-bottom: 1px solid #f0f0f5; }
  .history-item:last-child { border-bottom: none; }
- .history-title { font-size: 14px; font-weight: 500; color: #1d2129; margin-bottom: 6px; }
+ .history-title { font-size: 18px; font-weight: 500; color: #1d2129; margin-bottom: 6px; }
  .history-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
- .history-time { font-size: 12px; color: #86909c; }
- .history-answer { font-size: 13px; color: #606266; background: #f7f8fa; padding: 8px 12px; border-radius: 6px; margin-top: 6px; }
+ .history-time { font-size: 16px; color: #86909c; }
+ .history-answer { font-size: 17px; color: #606266; background: #f7f8fa; padding: 8px 12px; border-radius: 6px; margin-top: 6px; }
  .answer-label { color: #67c23a; font-weight: 500; }
  </style>

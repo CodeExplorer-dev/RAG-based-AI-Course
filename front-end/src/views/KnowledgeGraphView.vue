@@ -65,7 +65,7 @@
    justify-content: space-between;
    margin-bottom: 20px;
  }
- .page-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0; }
+ .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0; }
  .kg-actions { display: flex; gap: 8px; }
  .kg-canvas {
    background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 50%, #fdf2f8 100%);
@@ -83,8 +83,8 @@
    text-align: center;
    padding: 60px 40px;
  }
- .empty-title { font-size: 18px; font-weight: 600; color: #1d2129; margin: 16px 0 6px; }
- .empty-desc { font-size: 14px; color: #86909c; margin: 0; max-width: 360px; }
+ .empty-title { font-size: 24px; font-weight: 600; color: #1d2129; margin: 16px 0 6px; }
+ .empty-desc { font-size: 18px; color: #86909c; margin: 0; max-width: 360px; }
  .loading-state {
    text-align: center;
    color: #86909c;

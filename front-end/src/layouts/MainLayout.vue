@@ -131,16 +131,20 @@
    flex-shrink: 0;
  }
  .logo-icon { flex-shrink: 0; display: flex; align-items: center; }
- .logo-text { font-size: 16px; font-weight: 700; color: #e8ecf4; white-space: nowrap; letter-spacing: 1px; }
+ .logo-text { font-size: 20px; font-weight: 700; color: #e8ecf4; white-space: nowrap; letter-spacing: 1px; }
  .role-badge { text-align: center; padding: 12px 0 8px; flex-shrink: 0; }
  .aside-menu {
    border-right: none;
    flex: 1;
+   font-size: 18px;
    --el-menu-item-height: 46px;
    --el-menu-bg-color: transparent;
    --el-menu-text-color: #a0aec0;
    --el-menu-active-color: #5b8def;
    --el-menu-hover-bg-color: rgba(91, 141, 239, 0.1);
+ }
+ .aside-menu :deep(.el-menu-item) {
+   font-size: 18px;
  }
  .aside-menu .el-menu-item.is-active {
    background: linear-gradient(90deg, rgba(91,141,239,0.15) 0%, transparent 100%);
@@ -156,7 +160,7 @@
    height: 56px;
  }
  .header-left { display: flex; align-items: center; gap: 16px; }
- .header-breadcrumb { font-size: 14px; }
+ .header-breadcrumb { font-size: 18px; }
  .header-right { display: flex; align-items: center; gap: 12px; }
  .user-info {
    display: flex;
@@ -168,7 +172,7 @@
    transition: background 0.2s;
  }
  .user-info:hover { background: #f0f4ff; }
- .user-name { font-size: 14px; color: #1d2129; font-weight: 500; }
+ .user-name { font-size: 18px; color: #1d2129; font-weight: 500; }
  .layout-main {
    background: linear-gradient(135deg, #f5f7fa 0%, #f0f4ff 50%, #f5f0ff 100%);
    padding: 24px;

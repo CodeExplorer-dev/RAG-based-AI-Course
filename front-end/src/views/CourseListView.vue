@@ -93,7 +93,7 @@
    justify-content: space-between;
    margin-bottom: 24px;
  }
- .page-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0; }
+ .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0; }
  .course-grid {
    display: grid;
    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -120,7 +120,7 @@
  .card-accent { height: 4px; }
  .card-body { padding: 20px; }
  .card-icon { text-align: center; margin-bottom: 12px; }
- .card-title { font-size: 16px; font-weight: 600; text-align: center; margin: 0 0 6px; color: #1d2129; }
- .card-desc { font-size: 13px; color: #86909c; text-align: center; margin: 0 0 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ .card-title { font-size: 20px; font-weight: 600; text-align: center; margin: 0 0 6px; color: #1d2129; }
+ .card-desc { font-size: 17px; color: #86909c; text-align: center; margin: 0 0 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
  .card-footer { text-align: center; }
  </style>

@@ -172,7 +172,7 @@
    display: flex;
    align-items: center;
    gap: 8px;
-   font-size: 15px;
+   font-size: 20px;
    font-weight: 600;
    color: #1d2129;
  }
@@ -194,8 +194,8 @@
    padding: 40px;
  }
  .empty-icon { margin-bottom: 16px; }
- .empty-title { font-size: 18px; font-weight: 600; color: #1d2129; margin: 0 0 6px; }
- .empty-desc { font-size: 14px; color: #86909c; margin: 0 0 24px; }
+ .empty-title { font-size: 24px; font-weight: 600; color: #1d2129; margin: 0 0 6px; }
+ .empty-desc { font-size: 18px; color: #86909c; margin: 0 0 24px; }
  .empty-hints { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
  .empty-hints .el-tag { cursor: pointer; }
  .msg-row {
@@ -212,11 +212,11 @@
  .msg-avatar { flex-shrink: 0; }
  .msg-content { max-width: 70%; }
  .msg-row.user .msg-content { display: flex; flex-direction: column; align-items: flex-end; }
- .msg-role { font-size: 12px; color: #86909c; margin-bottom: 6px; }
+ .msg-role { font-size: 16px; color: #86909c; margin-bottom: 6px; }
  .msg-bubble {
    padding: 12px 16px;
    border-radius: 8px;
-   font-size: 14px;
+   font-size: 18px;
    line-height: 1.7;
    word-break: break-word;
  }
@@ -232,7 +232,7 @@
  }
  .msg-text { white-space: pre-wrap; }
  .msg-sources { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
- .source-label { font-size: 12px; color: #909399; }
+ .source-label { font-size: 16px; color: #909399; }
  .msg-actions { margin-top: 6px; display: flex; gap: 4px; padding-left: 4px; }
  .chat-input-bar {
    flex-shrink: 0;
