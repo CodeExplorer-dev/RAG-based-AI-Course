@@ -16,7 +16,9 @@
       </el-table-column>
       <el-table-column prop="student_count" label="学生数" width="80" align="center" />
       <el-table-column prop="courseware_count" label="课件数" width="80" align="center" />
-      <el-table-column prop="created_at" label="创建时间" width="170" />
+      <el-table-column label="创建时间" width="170">
+        <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
+      </el-table-column>
       <el-table-column label="操作" width="80" align="center">
         <template #default="{ row }">
           <el-button text type="danger" size="small" @click="deleteCourseFn(row)">删除</el-button>
@@ -30,6 +32,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../../api/request'
+import { formatTime } from '../../utils/formatTime'
 
 const loading = ref(false)
 const courses = ref([])

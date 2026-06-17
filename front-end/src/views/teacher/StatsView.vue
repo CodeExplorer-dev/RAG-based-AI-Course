@@ -22,7 +22,9 @@
         <el-table-column prop="title" label="问题" min-width="200" />
         <el-table-column prop="student_name" label="提问学生" width="120" />
         <el-table-column prop="course_name" label="课程" width="140" />
-        <el-table-column prop="created_at" label="提问时间" width="170" />
+        <el-table-column label="提问时间" width="170">
+          <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="160" align="center">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="showAnswerDialog(row)">回答</el-button>
@@ -50,8 +52,9 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Notebook, FolderOpened, Message, Warning } from '@element-plus/icons-vue'
-import request from '../api/request'
-import { listCourses } from '../api/course'
+import request from '../../api/request'
+import { formatTime } from '../../utils/formatTime'
+import { listCourses } from '../../api/course'
 
 const loading = ref(false)
 const answering = ref(false)

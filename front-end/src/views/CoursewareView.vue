@@ -13,7 +13,7 @@
     </div>
 
     <template v-if="selectedCourseId">
-      <div class="upload-zone" @dragover.prevent @drop.prevent="handleDrop">
+      <div v-if="isTeacher" class="upload-zone" @dragover.prevent @drop.prevent="handleDrop">
         <el-upload
           :http-request="uploadFile"
           :show-file-list="false"
@@ -56,7 +56,9 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="uploaded_at" label="上传时间" width="170" />
+          <el-table-column label="上传时间" width="170">
+            <template #default="{ row }">{{ formatTime(row.uploaded_at) }}</template>
+          </el-table-column>
           <el-table-column label="操作" width="80" align="center">
             <template #default="{ row }">
               <el-tooltip content="删除" placement="top">
@@ -74,14 +76,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Upload, Document, Delete } from '@element-plus/icons-vue'
 import { listCourses } from '../api/course'
 import { listCourseware, uploadCourseware, deleteCourseware } from '../api/courseware'
+import { formatTime } from '../utils/formatTime'
+import { useUserStore } from '../stores/user'
 
 const route = useRoute()
+const userStore = useUserStore()
+const isTeacher = computed(() => userStore.userInfo?.role === 'teacher')
 const loading = ref(false)
 const coursewareList = ref([])
 const courseList = ref([])

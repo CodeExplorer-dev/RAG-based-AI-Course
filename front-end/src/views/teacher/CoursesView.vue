@@ -12,7 +12,9 @@
         </template>
       </el-table-column>
       <el-table-column prop="student_count" label="学生人数" width="100" align="center" />
-      <el-table-column prop="created_at" label="创建时间" width="170" />
+      <el-table-column label="创建时间" width="170">
+        <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
+      </el-table-column>
       <el-table-column label="操作" width="200" align="center">
         <template #default="{ row }">
           <el-button text type="primary" size="small" @click="copyCode(row.join_code)">复制加入码</el-button>
@@ -44,6 +46,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { listCourses, createCourse, deleteCourse } from '../../api/course'
+import { formatTime } from '../../utils/formatTime'
 
 const loading = ref(false)
 const saving = ref(false)
