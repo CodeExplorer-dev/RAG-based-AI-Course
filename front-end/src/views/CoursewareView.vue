@@ -128,12 +128,19 @@
    background: #f0f9ff;
  }
  .upload-inner { width: 100%; }
+.upload-zone :deep(.el-upload) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 180px;
+}
  .upload-content {
    padding: 32px 20px;
    text-align: center;
  }
- .upload-text { font-size: 18px; color: #1d2129; margin: 12px 0 4px; }
- .upload-hint { font-size: 16px; color: #86909c; margin: 0; }
+ .upload-text { font-size: 18px; color: #1d2129; margin: 12px 0 4px; text-align: center; }
+ .upload-hint { font-size: 16px; color: #86909c; margin: 0; text-align: center; }
  .cw-table-wrap { background: #fff; border-radius: 8px; }
  .file-cell { display: flex; align-items: center; gap: 8px; }
  .loading-icon { animation: spin 1s linear infinite; }
