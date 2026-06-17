@@ -166,13 +166,13 @@
  }
  .login-header { text-align: center; margin-bottom: 32px; }
  .login-logo { margin-bottom: 12px; }
- .login-title { font-size: 22px; font-weight: 700; color: #1d2129; margin: 0 0 6px; letter-spacing: 0; }
- .login-subtitle { font-size: 14px; color: #86909c; margin: 0; }
+ .login-title { font-size: 28px; font-weight: 700; color: #1d2129; margin: 0 0 6px; letter-spacing: 0; }
+ .login-subtitle { font-size: 18px; color: #86909c; margin: 0; }
  .login-form { margin-bottom: 8px; }
- .login-btn { width: 100%; height: 42px; font-size: 15px; letter-spacing: 0; }
+ .login-btn { width: 100%; height: 46px; font-size: 18px; letter-spacing: 0; }
  .login-footer {
    text-align: center;
-   font-size: 14px;
+   font-size: 18px;
    color: #86909c;
  }
  .footer-text { margin-right: 2px; }

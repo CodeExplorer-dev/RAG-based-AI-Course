@@ -112,7 +112,7 @@
    justify-content: space-between;
    margin-bottom: 20px;
  }
- .page-title { font-size: 20px; font-weight: 600; color: #1d2129; margin: 0; }
+ .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0; }
  .upload-zone {
    background: linear-gradient(135deg, #fafcff 0%, #f0f4ff 100%);
    border: 2px dashed rgba(91,141,239,0.25);
@@ -132,8 +132,8 @@
    padding: 32px 20px;
    text-align: center;
  }
- .upload-text { font-size: 14px; color: #1d2129; margin: 12px 0 4px; }
- .upload-hint { font-size: 12px; color: #86909c; margin: 0; }
+ .upload-text { font-size: 18px; color: #1d2129; margin: 12px 0 4px; }
+ .upload-hint { font-size: 16px; color: #86909c; margin: 0; }
  .cw-table-wrap { background: #fff; border-radius: 8px; }
  .file-cell { display: flex; align-items: center; gap: 8px; }
  .loading-icon { animation: spin 1s linear infinite; }
