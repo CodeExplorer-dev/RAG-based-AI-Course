@@ -3,6 +3,7 @@ from models.course import Course
 from models.user_course import UserCourse
 from models.courseware import Courseware
 from models.document_chunk import DocumentChunk
+from models.question import Question
 
 __all__ = [
     'User',
@@ -10,4 +11,5 @@ __all__ = [
     'UserCourse',
     'Courseware',
     'DocumentChunk',
+    'Question',
 ]
