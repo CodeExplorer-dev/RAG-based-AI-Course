@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <el-container class="layout-container">
     <el-aside :width="isCollapsed ? '64px' : '230px'" class="layout-aside">
       <div class="logo-area">
@@ -26,6 +26,9 @@
           <el-menu-item index="/courseware"><el-icon><FolderOpened /></el-icon><span>课件管理</span></el-menu-item>
           <el-menu-item index="/chat"><el-icon><ChatDotRound /></el-icon><span>AI 问答</span></el-menu-item>
           <el-menu-item index="/ask-teacher"><el-icon><Message /></el-icon><span>向老师提问</span></el-menu-item>
+          <el-menu-item index="/knowledge-graph"><el-icon><Share /></el-icon><span>知识图谱</span></el-menu-item>
+          <el-menu-item index="/learning-path"><el-icon><TrendCharts /></el-icon><span>学习路径</span></el-menu-item>
+          <el-menu-item index="/statistics"><el-icon><DataAnalysis /></el-icon><span>提问统计</span></el-menu-item>
         </template>
         <!-- 教师菜单 -->
         <template v-if="role === 'teacher'">
@@ -33,6 +36,10 @@
           <el-menu-item index="/teacher/courses"><el-icon><Notebook /></el-icon><span>课程管理</span></el-menu-item>
           <el-menu-item index="/teacher/courseware"><el-icon><FolderOpened /></el-icon><span>课件管理</span></el-menu-item>
           <el-menu-item index="/teacher/chat"><el-icon><ChatDotRound /></el-icon><span>AI 问答</span></el-menu-item>
+          <el-menu-item index="/teacher/answer-questions"><el-icon><Edit /></el-icon><span>回答问题</span></el-menu-item>
+          <el-menu-item index="/teacher/knowledge-graph"><el-icon><Share /></el-icon><span>知识图谱</span></el-menu-item>
+          <el-menu-item index="/teacher/learning-path"><el-icon><TrendCharts /></el-icon><span>学习路径</span></el-menu-item>
+          <el-menu-item index="/teacher/statistics"><el-icon><DataAnalysis /></el-icon><span>教学统计</span></el-menu-item>
         </template>
         <!-- 管理员菜单 -->
         <template v-if="role === 'admin'">
@@ -79,7 +86,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { Notebook, FolderOpened, ChatDotRound, Message, Fold, UserFilled, SwitchButton, Odometer, User } from '@element-plus/icons-vue'
+import { Notebook, FolderOpened, ChatDotRound, Message, Fold, UserFilled, SwitchButton, Odometer, User, Share, TrendCharts, DataAnalysis, Edit } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -184,3 +191,4 @@ function handleCommand(cmd) {
 .page-fade-enter-from { opacity: 0; transform: translateY(8px); }
 .page-fade-leave-to { opacity: 0; }
 </style>
+

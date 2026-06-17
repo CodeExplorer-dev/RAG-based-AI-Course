@@ -1,4 +1,4 @@
-"""管理员接口 — 系统面板、用户管理、课程管理"""
+﻿"""管理员接口 — 系统面板、用户管理、课程管理"""
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions import db
@@ -126,9 +126,15 @@ def delete_user(user_id):
     # 3. 用户的选课记录
     UserCourse.query.filter_by(user_id=user_id).delete()
 
-    # 4. 删除用户
+    # 4. 用户的提问记录
+    from models import Question
+    Question.query.filter_by(student_id=user_id).delete()
+    db.session.flush()
+
+    # 5. 删除用户
     db.session.delete(target_user)
     db.session.commit()
+
 
     return jsonify({'code': 200, 'message': '用户已删除', 'data': None}), 200
 
@@ -185,3 +191,6 @@ def delete_any_course(course_id):
     db.session.commit()
 
     return jsonify({'code': 200, 'message': '课程已删除', 'data': None}), 200
+
+
+

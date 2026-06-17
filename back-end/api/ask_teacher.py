@@ -1,4 +1,4 @@
-"""提问接口 — 学生向老师提问"""
+﻿"""提问接口 — 学生向老师提问"""
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -96,6 +96,41 @@ def course_questions(course_id):
     }), 200
 
 
+# ─── 教师待回答问题 ─────────────────────────────────────
+
+@ask_teacher_bp.route('/pending', methods=['GET'])
+@jwt_required()
+def pending_questions():
+    """获取教师名下所有课程的待回答问题"""
+    user_id = int(get_jwt_identity())
+    user = db.session.get(User, user_id)
+    if not user or user.role not in ('teacher', 'admin'):
+        return jsonify({'code': 403, 'message': '权限不足', 'data': None}), 403
+
+    # 获取教师的所有课程 ID
+    if user.role == 'admin':
+        course_ids = [c.id for c in Course.query.all()]
+    else:
+        course_ids = [c.id for c in Course.query.filter_by(teacher_id=user_id).all()]
+
+    if not course_ids:
+        return jsonify({'code': 200, 'message': 'success', 'data': {'questions': [], 'pending_count': 0}}), 200
+
+    questions = Question.query.filter(
+        Question.course_id.in_(course_ids),
+        Question.status == 'pending'
+    ).order_by(Question.created_at.desc()).all()
+
+    return jsonify({
+        'code': 200,
+        'message': 'success',
+        'data': {
+            'questions': [q.to_dict() for q in questions],
+            'pending_count': len(questions),
+        }
+    }), 200
+
+
 # ─── 回答问题 ────────────────────────────────────────────
 
 @ask_teacher_bp.route('/<int:question_id>/answer', methods=['PUT'])
@@ -127,3 +162,4 @@ def answer_question(question_id):
         'message': '回答成功',
         'data': question.to_dict()
     }), 200
+

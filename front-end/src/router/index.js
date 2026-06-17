@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+﻿import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 
 const routes = [
@@ -13,13 +13,11 @@ const routes = [
     component: () => import('../layouts/MainLayout.vue'),
     redirect: '/courses',
     children: [
-      // 学生/通用 — 课程列表
+      { path: 'learning-path', name: 'LearningPath', component: () => import('../views/LearningPathView.vue'), meta: { title: '学习路径', icon: 'TrendCharts' } },
       { path: 'courses', name: 'Courses', component: () => import('../views/CourseListView.vue'), meta: { title: '课程列表', icon: 'Notebook' } },
-      // 课件管理（支持 ?course_id= 参数）
       { path: 'courseware', name: 'Courseware', component: () => import('../views/CoursewareView.vue'), meta: { title: '课件管理', icon: 'FolderOpened' } },
       { path: 'chat/:courseId?', name: 'Chat', component: () => import('../views/ChatView.vue'), meta: { title: 'AI 问答', icon: 'ChatDotRound' } },
       { path: 'ask-teacher', name: 'AskTeacher', component: () => import('../views/AskTeacherView.vue'), meta: { title: '向老师提问', icon: 'Message' } },
-      // 以下功能开发中
       { path: 'knowledge-graph/:courseId?', name: 'KnowledgeGraph', component: () => import('../views/KnowledgeGraphView.vue'), meta: { title: '知识图谱', icon: 'Share' } },
       { path: 'statistics', name: 'Statistics', component: () => import('../views/StatisticsView.vue'), meta: { title: '提问统计', icon: 'DataAnalysis' } },
     ]
@@ -33,7 +31,8 @@ const routes = [
       { path: 'courses', name: 'TeacherCourses', component: () => import('../views/teacher/CoursesView.vue'), meta: { title: '课程管理', icon: 'Notebook', roles: ['teacher'] } },
       { path: 'courseware', name: 'TeacherCourseware', component: () => import('../views/CoursewareView.vue'), meta: { title: '课件管理', icon: 'FolderOpened', roles: ['teacher'] } },
       { path: 'chat/:courseId?', name: 'TeacherChat', component: () => import('../views/ChatView.vue'), meta: { title: 'AI 问答', icon: 'ChatDotRound', roles: ['teacher'] } },
-      // 以下功能开发中
+      { path: 'answer-questions', name: 'AnswerQuestions', component: () => import('../views/teacher/AnswerQuestionsView.vue'), meta: { title: '回答问题', icon: 'Edit', roles: ['teacher'] } },
+      { path: 'learning-path', name: 'TeacherLearningPath', component: () => import('../views/LearningPathView.vue'), meta: { title: '学习路径', icon: 'TrendCharts', roles: ['teacher'] } },
       { path: 'knowledge-graph/:courseId?', name: 'TeacherKG', component: () => import('../views/KnowledgeGraphView.vue'), meta: { title: '知识图谱', icon: 'Share', roles: ['teacher'] } },
       { path: 'statistics', name: 'TeacherStats', component: () => import('../views/teacher/StatsView.vue'), meta: { title: '教学统计', icon: 'DataAnalysis', roles: ['teacher'] } },
     ]
@@ -71,3 +70,4 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
+
