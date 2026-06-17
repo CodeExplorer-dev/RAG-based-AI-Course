@@ -53,7 +53,7 @@
                  <el-tag size="small" :type="q.status === 'answered' ? 'success' : 'warning'" round>
                    {{ q.status === 'answered' ? '已回复' : '待回复' }}
                  </el-tag>
-                 <span class="history-time">{{ q.created_at }}</span>
+                 <span class="history-time">{{ formatTime(q.created_at) }}</span>
                </div>
                <div v-if="q.answer" class="history-answer">
                  <span class="answer-label">教师回复：</span>
@@ -72,6 +72,7 @@
  import { ref, onMounted } from 'vue'
  import { ElMessage } from 'element-plus'
  import request from '../api/request'
+import { formatTime } from '../utils/formatTime'
  
  const courses = ref([])
  const myQuestions = ref([])

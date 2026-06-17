@@ -29,7 +29,7 @@
           <div class="q-meta">
             <span><el-icon :size="14"><User /></el-icon> {{ q.student_name || '未知' }}</span>
             <span><el-icon :size="14"><Notebook /></el-icon> {{ q.course_name || '无课程' }}</span>
-            <span><el-icon :size="14"><Clock /></el-icon> {{ q.created_at }}</span>
+            <span><el-icon :size="14"><Clock /></el-icon> {{ formatTime(q.created_at) }}</span>
           </div>
           <div class="q-content">{{ q.content }}</div>
           <div v-if="q.answer" class="q-answer">
@@ -58,7 +58,7 @@
           <el-tag size="small" type="info" round>{{ currentQuestion.course_name }}</el-tag>
         </div>
         <div class="dq-student">
-          <el-icon><User /></el-icon> {{ currentQuestion.student_name }} 提问于 {{ currentQuestion.created_at }}
+          <el-icon><User /></el-icon> {{ currentQuestion.student_name }} 提问于 {{ formatTime(currentQuestion.created_at) }}
         </div>
         <div class="dq-content">{{ currentQuestion.content }}</div>
       </div>
@@ -84,6 +84,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh, User, Notebook, Clock, Edit } from '@element-plus/icons-vue'
 import request from '../../api/request'
+import { formatTime } from '../../utils/formatTime'
 
 const loading = ref(false)
 const answering = ref(false)

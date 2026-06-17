@@ -19,7 +19,9 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="created_at" label="注册时间" width="170" />
+      <el-table-column label="注册时间" width="170">
+        <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
+      </el-table-column>
       <el-table-column label="操作" width="200" align="center">
         <template #default="{ row }">
           <template v-if="row.role !== 'admin'">
@@ -44,6 +46,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../../api/request'
+import { formatTime } from '../../utils/formatTime'
 
 const loading = ref(false)
 const users = ref([])

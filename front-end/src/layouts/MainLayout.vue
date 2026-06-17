@@ -27,7 +27,6 @@
           <el-menu-item index="/chat"><el-icon><ChatDotRound /></el-icon><span>AI 问答</span></el-menu-item>
           <el-menu-item index="/ask-teacher"><el-icon><Message /></el-icon><span>向老师提问</span></el-menu-item>
           <el-menu-item index="/knowledge-graph"><el-icon><Share /></el-icon><span>知识图谱</span></el-menu-item>
-          <el-menu-item index="/learning-path"><el-icon><TrendCharts /></el-icon><span>学习路径</span></el-menu-item>
           <el-menu-item index="/statistics"><el-icon><DataAnalysis /></el-icon><span>提问统计</span></el-menu-item>
         </template>
         <!-- 教师菜单 -->
