@@ -1,4 +1,12 @@
-﻿import { createRouter, createWebHistory } from 'vue-router'
+﻿/*
+ * @Author: myw 1686196831@qq.com
+ * @Date: 2026-06-16 09:00:14
+ * @LastEditors: myw 1686196831@qq.com
+ * @LastEditTime: 2026-06-17 17:19:43
+ * @FilePath: \RAG-based-AI-Course\front-end\src\router\index.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 
 const routes = [
@@ -13,7 +21,6 @@ const routes = [
     component: () => import('../layouts/MainLayout.vue'),
     redirect: '/courses',
     children: [
-      { path: 'learning-path', name: 'LearningPath', component: () => import('../views/LearningPathView.vue'), meta: { title: '学习路径', icon: 'TrendCharts' } },
       { path: 'courses', name: 'Courses', component: () => import('../views/CourseListView.vue'), meta: { title: '课程列表', icon: 'Notebook' } },
       { path: 'courseware', name: 'Courseware', component: () => import('../views/CoursewareView.vue'), meta: { title: '课件管理', icon: 'FolderOpened' } },
       { path: 'chat/:courseId?', name: 'Chat', component: () => import('../views/ChatView.vue'), meta: { title: 'AI 问答', icon: 'ChatDotRound' } },
@@ -32,7 +39,6 @@ const routes = [
       { path: 'courseware', name: 'TeacherCourseware', component: () => import('../views/CoursewareView.vue'), meta: { title: '课件管理', icon: 'FolderOpened', roles: ['teacher'] } },
       { path: 'chat/:courseId?', name: 'TeacherChat', component: () => import('../views/ChatView.vue'), meta: { title: 'AI 问答', icon: 'ChatDotRound', roles: ['teacher'] } },
       { path: 'answer-questions', name: 'AnswerQuestions', component: () => import('../views/teacher/AnswerQuestionsView.vue'), meta: { title: '回答问题', icon: 'Edit', roles: ['teacher'] } },
-      { path: 'learning-path', name: 'TeacherLearningPath', component: () => import('../views/LearningPathView.vue'), meta: { title: '学习路径', icon: 'TrendCharts', roles: ['teacher'] } },
       { path: 'knowledge-graph/:courseId?', name: 'TeacherKG', component: () => import('../views/KnowledgeGraphView.vue'), meta: { title: '知识图谱', icon: 'Share', roles: ['teacher'] } },
       { path: 'statistics', name: 'TeacherStats', component: () => import('../views/teacher/StatsView.vue'), meta: { title: '教学统计', icon: 'DataAnalysis', roles: ['teacher'] } },
     ]
@@ -70,4 +76,5 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
+
 

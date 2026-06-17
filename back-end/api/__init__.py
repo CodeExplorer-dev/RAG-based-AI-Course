@@ -1,4 +1,4 @@
-"""注册所有 API 蓝图"""
+﻿"""注册所有 API 蓝图"""
 
 
 def register_blueprints(app):
@@ -12,7 +12,6 @@ def register_blueprints(app):
     from api.teacher import teacher_bp
     from api.knowledge_graph import kg_bp
     from api.statistics import stats_bp
-    from api.learning_path import learning_path_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/user')
@@ -24,4 +23,3 @@ def register_blueprints(app):
     app.register_blueprint(teacher_bp, url_prefix='/api/teacher')
     app.register_blueprint(kg_bp, url_prefix='/api/knowledge-graph')
     app.register_blueprint(stats_bp, url_prefix='/api/statistics')
-    app.register_blueprint(learning_path_bp, url_prefix='/api/learning-path')

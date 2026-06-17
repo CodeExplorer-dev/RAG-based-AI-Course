@@ -37,7 +37,6 @@
           <el-menu-item index="/teacher/chat"><el-icon><ChatDotRound /></el-icon><span>AI 问答</span></el-menu-item>
           <el-menu-item index="/teacher/answer-questions"><el-icon><Edit /></el-icon><span>回答问题</span></el-menu-item>
           <el-menu-item index="/teacher/knowledge-graph"><el-icon><Share /></el-icon><span>知识图谱</span></el-menu-item>
-          <el-menu-item index="/teacher/learning-path"><el-icon><TrendCharts /></el-icon><span>学习路径</span></el-menu-item>
           <el-menu-item index="/teacher/statistics"><el-icon><DataAnalysis /></el-icon><span>教学统计</span></el-menu-item>
         </template>
         <!-- 管理员菜单 -->
@@ -190,4 +189,5 @@ function handleCommand(cmd) {
 .page-fade-enter-from { opacity: 0; transform: translateY(8px); }
 .page-fade-leave-to { opacity: 0; }
 </style>
+
 
