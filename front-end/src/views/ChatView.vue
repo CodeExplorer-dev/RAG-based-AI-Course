@@ -1,4 +1,4 @@
- <template>
+﻿<template>
   <div class="chat-page">
     <div class="chat-header">
       <div class="chat-header-info">
@@ -43,27 +43,26 @@
         <div class="msg-content">
           <div class="msg-role">{{ msg.role === 'user' ? '你' : 'AI 助手' }}</div>
           <div class="msg-bubble">
-            <div class="msg-text">{{ msg.content }}</div>
+            <div class="msg-text" v-html="msg.displayContent || msg.content"></div>
             <div v-if="msg.sources?.length" class="msg-sources">
               <span class="source-label">参考来源：</span>
-              <el-tag v-for="(s, j) in msg.sources" :key="j" size="small" round>{{ s }}</el-tag>
+              <el-tag v-for="(s, j) in msg.sources" :key="j" size="small" round type="info">
+                {{ s }}
+              </el-tag>
             </div>
-          </div>
-          <div v-if="msg.role === 'assistant'" class="msg-actions">
-            <el-tooltip content="有帮助" placement="top">
-              <el-button text size="small" circle @click="rateMessage(i, 'like')">
-                <el-icon><svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg></el-icon>
-              </el-button>
-            </el-tooltip>
-            <el-tooltip content="没有帮助" placement="top">
-              <el-button text size="small" circle @click="rateMessage(i, 'dislike')">
-                <el-icon><svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 2.65l1.45 1.32C18.6 8.64 22 11.72 22 15.5 22 18.58 19.58 21 16.5 21c-1.74 0-3.41-.81-4.5-2.09C10.91 20.19 9.24 21 7.5 21 4.42 21 2 18.58 2 15.5c0-3.78 3.4-6.86 8.55-11.54z"/></svg></el-icon>
-              </el-button>
-            </el-tooltip>
           </div>
         </div>
       </div>
-      <div v-if="loading" class="msg-row assistant">
+      <div v-if="streaming" class="msg-row assistant">
+        <div class="msg-avatar"><el-avatar :size="36" icon="Promotion" style="background:#e6f4ff" /></div>
+        <div class="msg-content">
+          <div class="msg-role">AI 助手</div>
+          <div class="msg-bubble">
+            <span class="streaming-text">{{ streamBuffer }}<span class="cursor-blink">|</span></span>
+          </div>
+        </div>
+      </div>
+      <div v-if="!streaming && loading" class="msg-row assistant">
         <div class="msg-avatar"><el-avatar :size="36" icon="Promotion" style="background:#e6f4ff" /></div>
         <div class="msg-content">
           <div class="msg-role">AI 助手</div>
@@ -77,14 +76,14 @@
       <el-input
         v-model="inputText"
         placeholder="输入你的问题..."
-        :disabled="loading"
+        :disabled="streaming || loading"
         size="large"
         @keyup.enter="sendMessage"
       >
         <template #append>
           <el-button
             type="primary"
-            :disabled="!inputText.trim() || loading"
+            :disabled="!inputText.trim() || streaming || loading"
             @click="sendMessage"
             :icon="Position"
           />
@@ -106,17 +105,16 @@ const chatRef = ref(null)
 const inputText = ref('')
 const messages = ref([])
 const loading = ref(false)
+const streaming = ref(false)
+const streamBuffer = ref('')
 const courseList = ref([])
 const selectedCourseId = ref(null)
 
 const hints = ['这门课主要讲什么？', '帮我梳理第二章的知识点', '这道题应该怎么理解？']
 
 onMounted(async () => {
-  // 从 URL 参数获取课程 ID
   const urlCourseId = route.params.courseId || route.query.course_id
   if (urlCourseId) selectedCourseId.value = Number(urlCourseId)
-
-  // 加载用户课程列表
   try {
     const res = await listCourses()
     courseList.value = res.data?.courses || []
@@ -125,25 +123,51 @@ onMounted(async () => {
 
 async function sendMessage() {
   const text = inputText.value.trim()
-  if (!text || loading.value) return
+  if (!text || streaming.value || loading.value) return
   inputText.value = ''
+
   messages.value.push({ role: 'user', content: text })
   loading.value = true
   scrollDown()
+
   try {
     const res = await request.post('/api/chat', {
       message: text,
       course_id: selectedCourseId.value || null
     })
-    messages.value.push({
-      role: 'assistant',
-      content: res.data?.answer || res.answer || '暂无回答',
-      sources: res.data?.sources || []
-    })
-  } catch {
-    messages.value.push({ role: 'assistant', content: '抱歉，暂时无法回答，请稍后再试。', sources: [] })
-  } finally {
     loading.value = false
+
+    const answer = res.data?.answer || res.answer || '暂无回答'
+    const sources = res.data?.sources || []
+
+    // 流式打字效果
+    streamBuffer.value = ''
+    streaming.value = true
+    scrollDown()
+
+    let idx = 0
+    const chars = answer.split('')
+    const typeInterval = setInterval(() => {
+      if (idx < chars.length) {
+        streamBuffer.value += chars[idx]
+        idx++
+        scrollDown()
+      } else {
+        clearInterval(typeInterval)
+        streaming.value = false
+        messages.value.push({
+          role: 'assistant',
+          content: answer,
+          displayContent: answer,
+          sources: sources
+        })
+        streamBuffer.value = ''
+        scrollDown()
+      }
+    }, 30)
+  } catch {
+    loading.value = false
+    messages.value.push({ role: 'assistant', content: '抱歉，暂时无法回答，请稍后再试。', sources: [] })
     scrollDown()
   }
 }
@@ -155,11 +179,8 @@ function sendHint(hint) {
 
 function clearChat() {
   messages.value = []
-}
-
-function rateMessage(index, type) {
-  const msg = messages.value[index]
-  request.post('/api/chat/feedback', { message_id: msg.id, type }).catch(() => {})
+  streamBuffer.value = ''
+  streaming.value = false
 }
 
 function scrollDown() {
@@ -174,7 +195,7 @@ function scrollDown() {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 112px);
-  background: linear-gradient(180deg, #f8faff 0%, #f0f4ff 30%, #eef2ff 70%, #f5f0ff 100%);
+  background: #f7f8fa;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -183,7 +204,7 @@ function scrollDown() {
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid #e4e7ed;
   flex-shrink: 0;
@@ -251,18 +272,33 @@ function scrollDown() {
   border-bottom-right-radius: 2px;
 }
 .msg-row.assistant .msg-bubble {
-  background: #f7f8fa;
+  background: #fff;
   color: #1d2129;
   border-bottom-left-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 .msg-text { white-space: pre-wrap; }
 .msg-sources { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .source-label { font-size: 16px; color: #909399; }
-.msg-actions { margin-top: 6px; display: flex; gap: 4px; padding-left: 4px; }
 .chat-input-bar {
   flex-shrink: 0;
   padding: 16px 20px;
   border-top: 1px solid #e4e7ed;
+  background: #fff;
+}
+.streaming-text {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #1d2129;
+}
+.cursor-blink {
+  animation: blink 0.8s infinite;
+  color: #409eff;
+  font-weight: bold;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 .dot-pulse {
   display: flex;

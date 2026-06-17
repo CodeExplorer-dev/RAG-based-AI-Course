@@ -1,4 +1,4 @@
-"""应用配置类"""
+﻿"""应用配置类"""
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -45,6 +45,7 @@ class Config:
 class DevelopmentConfig(Config):
     """开发环境配置"""
     DEBUG = True
+    
 
 
 class ProductionConfig(Config):
@@ -63,3 +64,4 @@ config_map = {
     'production': ProductionConfig,
     'testing': TestingConfig,
 }
+

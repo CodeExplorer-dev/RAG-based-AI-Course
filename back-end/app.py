@@ -1,4 +1,4 @@
-"""Flask 应用入口"""
+﻿"""Flask 应用入口"""
 import os
 from flask import Flask
 from config import config_map
@@ -26,6 +26,22 @@ def create_app(config_name=None):
 
     # 确保上传目录存在
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database'), exist_ok=True)
+
+    # 自动建表 + 种子用户
+    with app.app_context():
+        from extensions import db
+        from werkzeug.security import generate_password_hash
+        from models import User
+        db.create_all()
+        for uname, pwd, role in [
+            ('admin', 'admin123', 'admin'),
+            ('teacher1', 'teacher123', 'teacher'),
+            ('student1', 'student123', 'student'),
+        ]:
+            if not User.query.filter_by(username=uname).first():
+                db.session.add(User(username=uname, password=generate_password_hash(pwd), role=role))
+        db.session.commit()
 
     return app
 
