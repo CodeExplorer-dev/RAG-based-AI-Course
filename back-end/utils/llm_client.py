@@ -1,4 +1,4 @@
-"""LLM API 客户端 — 兼容 OpenAI API 格式"""
+﻿"""LLM API 客户端 — 兼容 OpenAI API 格式"""
 import os
 import logging
 import requests
@@ -70,3 +70,4 @@ class LLMClient:
 
 # 全局单例
 llm_client = LLMClient()
+

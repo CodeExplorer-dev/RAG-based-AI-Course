@@ -1,9 +1,9 @@
-"""课件相关接口"""
+﻿"""课件相关接口"""
 import os
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions import db
-from models import User, UserCourse, Courseware, DocumentChunk
+from models import User, UserCourse, Courseware, DocumentChunk, Course
 from services.document_service import document_service
 from utils.errors import ForbiddenError, NotFoundError
 
@@ -41,6 +41,9 @@ def upload():
         user_id=user_id, course_id=course_id, role='teacher'
     ).first()
     if not enrollment:
+        course = db.session.get(Course, course_id)
+        if course and course.teacher_id == user_id:
+            enrollment = course
         return jsonify({'code': 403, 'message': '仅该课程的教师可上传课件', 'data': None}), 403
 
     title = request.form.get('title')
@@ -155,3 +158,8 @@ def delete_courseware(courseware_id):
     db.session.commit()
 
     return jsonify({'code': 200, 'message': '课件已删除', 'data': None}), 200
+
+
+
+
+

@@ -1,8 +1,8 @@
-import axios from 'axios'
+﻿import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || ' http://localhost:5000',
+  baseURL: import.meta.env.VITE_API_BASE || '',
   timeout: 30000
 })
 
@@ -30,3 +30,4 @@ request.interceptors.response.use(
 )
 
 export default request
+

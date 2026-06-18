@@ -45,11 +45,17 @@
           <div class="msg-bubble">
             <div class="msg-text" v-html="msg.displayContent || msg.content"></div>
             <div v-if="msg.sources?.length" class="msg-sources">
-              <span class="source-label">参考来源：</span>
-              <el-tag v-for="(s, j) in msg.sources" :key="j" size="small" round type="info">
-                {{ s }}
-              </el-tag>
-            </div>
+  <div class="source-title">📎 参考来源</div>
+  <div v-for="(s, j) in msg.sources" :key="j" class="source-item">
+    <el-tooltip :content="s.courseware_title || '课件片段'" placement="top">
+      <el-tag size="small" round color="#e8f4fd" style="color:#1d7ab8;border:none;margin:1px 0">
+        <span v-if="s.heading">{{ s.heading }}</span>
+        <span v-else>片段 #{{ s.chunk_index }}</span>
+        <span v-if="s.page_ref" style="margin-left:4px;font-size:11px;opacity:0.7">p.{{ s.page_ref }}</span>
+      </el-tag>
+    </el-tooltip>
+  </div>
+</div>
           </div>
         </div>
       </div>
@@ -279,7 +285,10 @@ function scrollDown() {
 }
 .msg-text { white-space: pre-wrap; }
 .msg-sources { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-.source-label { font-size: 16px; color: #909399; }
+.msg-sources { margin-top: 10px; }
+.source-title { font-size: 13px; color: #909399; margin-bottom: 4px; font-weight: 500; }
+.source-item { display: inline-block; margin-right: 4px; }
+
 .chat-input-bar {
   flex-shrink: 0;
   padding: 16px 20px;
@@ -325,3 +334,4 @@ function scrollDown() {
   40% { opacity: 1; }
 }
 </style>
+

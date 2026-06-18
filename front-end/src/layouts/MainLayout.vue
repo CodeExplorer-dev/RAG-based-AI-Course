@@ -72,7 +72,7 @@
       <el-main class="layout-main">
         <router-view v-slot="{ Component }">
           <transition name="page-fade" mode="out-in">
-            <component :is="Component" />
+            <component :is="Component" :key="route.path" />
           </transition>
         </router-view>
       </el-main>
@@ -189,5 +189,6 @@ function handleCommand(cmd) {
 .page-fade-enter-from { opacity: 0; transform: translateY(8px); }
 .page-fade-leave-to { opacity: 0; }
 </style>
+
 
 

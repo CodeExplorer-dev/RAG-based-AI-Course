@@ -9,7 +9,7 @@ class DocumentChunk(db.Model):
     courseware_id = db.Column(db.Integer, db.ForeignKey('courseware.id'), nullable=False)
     chunk_index = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
-    vector_id = db.Column(db.String(100), nullable=True, index=True)
+    vector_id = db.Column(db.Text, nullable=True)
     token_count = db.Column(db.Integer, nullable=False, default=0)
     page_ref = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
