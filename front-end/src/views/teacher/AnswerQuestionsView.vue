@@ -103,16 +103,24 @@
   </div>
 </template>
 
+<script>
+// 真正的模块作用域 — 组件销毁重建不会重置
+let _kpCache = []
+let _kpTotal = 0
+
+// 切换账号时供外部调用，清除缓存避免串数据
+export function clearKnowledgePointsCache() {
+  _kpCache = []
+  _kpTotal = 0
+}
+</script>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh, User, Notebook, Clock, Edit } from '@element-plus/icons-vue'
 import request from '../../api/request'
 import { formatTime } from '../../utils/formatTime'
-
-// 模块级缓存 — 组件销毁重建后仍然保留，切页面不丢失
-let _kpCache = []
-let _kpTotal = 0
 
 const loading = ref(false)
 const answering = ref(false)
