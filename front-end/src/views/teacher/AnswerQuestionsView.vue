@@ -110,6 +110,10 @@ import { Refresh, User, Notebook, Clock, Edit } from '@element-plus/icons-vue'
 import request from '../../api/request'
 import { formatTime } from '../../utils/formatTime'
 
+// 模块级缓存 — 组件销毁重建后仍然保留，切页面不丢失
+let _kpCache = []
+let _kpTotal = 0
+
 const loading = ref(false)
 const answering = ref(false)
 const questions = ref([])
@@ -117,12 +121,18 @@ const pendingCount = ref(0)
 const dialogVisible = ref(false)
 const currentQuestion = ref(null)
 const answerText = ref('')
-const knowledgePoints = ref([])
-const totalQuestions = ref(0)
+const knowledgePoints = ref(_kpCache)
+const totalQuestions = ref(_kpTotal)
 
 onMounted(() => {
   loadQuestions()
-  loadKnowledgePoints()
+  if (_kpCache.length > 0) {
+    // 切页面回来，直接用缓存，不发请求
+    knowledgePoints.value = _kpCache
+    totalQuestions.value = _kpTotal
+  } else {
+    loadKnowledgePoints()
+  }
 })
 
 async function loadQuestions() {
@@ -143,8 +153,10 @@ async function loadKnowledgePoints() {
   try {
     const res = await request.get('/api/ask-teacher/knowledge-points')
     const data = res.data || {}
-    knowledgePoints.value = data.knowledge_points || []
-    totalQuestions.value = data.total_questions || 0
+    _kpCache = data.knowledge_points || []
+    _kpTotal = data.total_questions || 0
+    knowledgePoints.value = _kpCache
+    totalQuestions.value = _kpTotal
   } catch {
     knowledgePoints.value = []
     totalQuestions.value = 0
@@ -166,6 +178,7 @@ async function submitAnswer() {
     dialogVisible.value = false
     questions.value = questions.value.filter(q => q.id !== currentQuestion.value.id)
     pendingCount.value = questions.value.filter(q => q.status === 'pending').length
+    loadKnowledgePoints()
     if (pendingCount.value === 0) {
       ElMessage.success('所有问题已回答完毕！')
     }
