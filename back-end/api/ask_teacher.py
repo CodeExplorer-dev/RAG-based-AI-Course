@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions import db
 from models import User, Course, UserCourse, Question
 from utils.errors import NotFoundError, ForbiddenError
+from utils.text_utils import extract_knowledge_points
 
 ask_teacher_bp = Blueprint('ask_teacher', __name__)
 
@@ -175,6 +176,48 @@ def answer_question(question_id):
     }), 200
 
 
-# ─── 清空我的提问 ─────────────────────────────────────
+# ─── 知识点排行（教师查看） ─────────────────────────────
 
+@ask_teacher_bp.route('/knowledge-points', methods=['GET'])
+@jwt_required()
+def knowledge_points():
+    """提取教师课程下所有提问的知识点，按频次排行"""
+    user_id = int(get_jwt_identity())
+    user = db.session.get(User, user_id)
+    if not user or user.role not in ('teacher', 'admin'):
+        return jsonify({'code': 403, 'message': '权限不足', 'data': None}), 403
 
+    # 获取教师的所有课程 ID
+    if user.role == 'admin':
+        course_ids = [c.id for c in Course.query.all()]
+    else:
+        course_ids = [c.id for c in Course.query.filter_by(teacher_id=user_id).all()]
+
+    if not course_ids:
+        return jsonify({
+            'code': 200, 'message': 'success',
+            'data': {'knowledge_points': [], 'total_questions': 0}
+        }), 200
+
+    questions = Question.query.filter(
+        Question.course_id.in_(course_ids)
+    ).order_by(Question.created_at.desc()).all()
+
+    if not questions:
+        return jsonify({
+            'code': 200, 'message': 'success',
+            'data': {'knowledge_points': [], 'total_questions': 0}
+        }), 200
+
+    # 拼接每个问题的标题+内容用于提取关键词
+    question_texts = [q.title + ' ' + q.content for q in questions]
+    knowledge_points = extract_knowledge_points(question_texts, top_n=15)
+
+    return jsonify({
+        'code': 200,
+        'message': 'success',
+        'data': {
+            'knowledge_points': knowledge_points,
+            'total_questions': len(questions)
+        }
+    }), 200

@@ -36,7 +36,8 @@ class LLMClient:
         }
 
         try:
-            resp = requests.post(url, json=payload, headers=headers, timeout=60)
+            req_timeout = kwargs.get('timeout', 60)
+            resp = requests.post(url, json=payload, headers=headers, timeout=req_timeout)
             resp.raise_for_status()
             data = resp.json()
             return data['choices'][0]['message']['content']
