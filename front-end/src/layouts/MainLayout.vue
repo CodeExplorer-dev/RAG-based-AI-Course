@@ -85,6 +85,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { Notebook, FolderOpened, ChatDotRound, Message, Fold, UserFilled, SwitchButton, Odometer, User, Share, TrendCharts, DataAnalysis, Edit } from '@element-plus/icons-vue'
+import { clearKnowledgePointsCache } from '../views/teacher/AnswerQuestionsView.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -110,6 +111,7 @@ const activeMenu = computed(() => {
 
 function handleCommand(cmd) {
   if (cmd === 'logout') {
+    clearKnowledgePointsCache()
     userStore.logout()
     router.push('/login')
   }
