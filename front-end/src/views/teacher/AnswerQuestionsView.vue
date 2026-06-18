@@ -10,7 +10,30 @@
       </el-tag>
     </div>
 
-    <el-card shadow="never" class="answer-card">
+    <div class="main-content">
+      <el-card v-if="knowledgePoints.length" shadow="never" class="kp-card">
+        <template #header>
+          <div class="card-header">
+            <span>高频知识点</span>
+            <span class="kp-total">共 {{ totalQuestions }} 条提问</span>
+          </div>
+        </template>
+        <div class="kp-list">
+          <div v-for="(kp, index) in knowledgePoints" :key="kp.name" class="kp-item">
+            <span class="kp-rank">{{ index + 1 }}</span>
+            <span class="kp-name">{{ kp.name }}</span>
+            <el-progress
+              :percentage="Math.round(kp.count / knowledgePoints[0].count * 100)"
+              :show-text="false"
+              :stroke-width="8"
+              class="kp-bar"
+            />
+            <span class="kp-count">{{ kp.count }} 次</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="never" class="answer-card">
       <template #header>
         <div class="card-header">
           <span>学生提问列表</span>
@@ -50,6 +73,7 @@
         </template>
       </el-empty>
     </el-card>
+    </div>
 
     <el-dialog v-model="dialogVisible" title="回答问题" width="600px" :close-on-click-modal="false">
       <div v-if="currentQuestion" class="dialog-question">
@@ -93,9 +117,12 @@ const pendingCount = ref(0)
 const dialogVisible = ref(false)
 const currentQuestion = ref(null)
 const answerText = ref('')
+const knowledgePoints = ref([])
+const totalQuestions = ref(0)
 
 onMounted(() => {
   loadQuestions()
+  loadKnowledgePoints()
 })
 
 async function loadQuestions() {
@@ -110,6 +137,18 @@ async function loadQuestions() {
     pendingCount.value = 0
   }
   loading.value = false
+}
+
+async function loadKnowledgePoints() {
+  try {
+    const res = await request.get('/api/ask-teacher/knowledge-points')
+    const data = res.data || {}
+    knowledgePoints.value = data.knowledge_points || []
+    totalQuestions.value = data.total_questions || 0
+  } catch {
+    knowledgePoints.value = []
+    totalQuestions.value = 0
+  }
 }
 
 function showAnswerDialog(q) {
@@ -145,7 +184,12 @@ async function submitAnswer() {
   margin-bottom: 24px;
 }
 .page-title { font-size: 26px; font-weight: 600; color: #1d2129; margin: 0; }
-.answer-card { border-radius: 8px; }
+.main-content {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.answer-card { border-radius: 8px; flex: 1; min-width: 0; }
 .card-header { display: flex; align-items: center; justify-content: space-between; font-size: 16px; font-weight: 600; }
 .question-item {
   padding: 20px;
@@ -198,4 +242,33 @@ async function submitAnswer() {
 .dq-student { font-size: 13px; color: #909399; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
 .dq-content { font-size: 15px; color: #606266; line-height: 1.6; white-space: pre-wrap; }
 .answer-input { margin-top: 8px; }
+/* 知识点排行 */
+.kp-card { border-radius: 8px; width: 320px; flex-shrink: 0; }
+.kp-total { font-size: 13px; color: #909399; font-weight: 400; }
+.kp-list { padding: 0; }
+.kp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+.kp-item:last-child { border-bottom: none; }
+.kp-rank {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #409eff;
+  color: #fff;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.kp-item:nth-child(1) .kp-rank { background: #f56c6c; }
+.kp-item:nth-child(2) .kp-rank { background: #e6a23c; }
+.kp-item:nth-child(3) .kp-rank { background: #67c23a; }
+.kp-name { font-size: 15px; color: #1d2129; font-weight: 500; flex: 0 0 auto; }
+.kp-bar { flex: 1; min-width: 80px; }
+.kp-count { font-size: 13px; color: #909399; white-space: nowrap; }
 </style>
