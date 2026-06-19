@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="cw-page">
     <div class="page-head">
       <h2 class="page-title">课件管理</h2>
@@ -36,52 +36,277 @@
                 <el-icon :size="18" color="#409eff"><Document /></el-icon>
                 <span>{{ row.title }}</span>
               </div>
-            </template>
+            
+  <!-- 解析详情弹窗 -->
+  <el-dialog v-model="chunkDialogVisible" class="chunk-dialog" :title="'解析详情 - ' + selectedCwTitle" width="750px" top="5vh" @close="chunksData=[]">
+    <div v-loading="chunksLoading">
+      <div v-if="!chunksLoading && chunksData.length === 0" style="text-align:center;padding:40px">
+        <el-empty description="暂无解析数据 / 课件尚未处理完成" />
+      </div>
+      <div v-for="(group, gIdx) in groupedChunks" :key="gIdx" style="margin-bottom:16px">
+        <h4 class="chunk-group-heading">
+          <el-icon style="vertical-align:-2px"><FolderOpened /></el-icon>
+          {{ group.heading }}
+        </h4>
+        <div v-for="chunk in group.chunks" :key="chunk.chunk_index" class="chunk-card">
+          <div class="chunk-meta">
+            <span class="chunk-index">#{{ chunk.chunk_index }}</span>
+            <el-tag size="small">{{ chunk.token_count }} tokens</el-tag>
+            <el-tag v-if="chunk.page_ref" size="small" type="info">第{{ chunk.page_ref }}页</el-tag>
+          </div>
+          <el-collapse>
+            <el-collapse-item title="查看完整内容" name="1">
+              <pre class="chunk-content-pre">{{ chunk.content }}</pre>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
+</template>
           </el-table-column>
           <el-table-column prop="file_type" label="类型" width="80" />
           <el-table-column label="大小" width="90">
             <template #default="{ row }">
               {{ formatSize(row.file_size) }}
-            </template>
+            
+  <!-- 解析详情弹窗 -->
+  <el-dialog v-model="chunkDialogVisible" class="chunk-dialog" :title="'解析详情 - ' + selectedCwTitle" width="750px" top="5vh" @close="chunksData=[]">
+    <div v-loading="chunksLoading">
+      <div v-if="!chunksLoading && chunksData.length === 0" style="text-align:center;padding:40px">
+        <el-empty description="暂无解析数据 / 课件尚未处理完成" />
+      </div>
+      <div v-for="(group, gIdx) in groupedChunks" :key="gIdx" style="margin-bottom:16px">
+        <h4 class="chunk-group-heading">
+          <el-icon style="vertical-align:-2px"><FolderOpened /></el-icon>
+          {{ group.heading }}
+        </h4>
+        <div v-for="chunk in group.chunks" :key="chunk.chunk_index" class="chunk-card">
+          <div class="chunk-meta">
+            <span class="chunk-index">#{{ chunk.chunk_index }}</span>
+            <el-tag size="small">{{ chunk.token_count }} tokens</el-tag>
+            <el-tag v-if="chunk.page_ref" size="small" type="info">第{{ chunk.page_ref }}页</el-tag>
+          </div>
+          <el-collapse>
+            <el-collapse-item title="查看完整内容" name="1">
+              <pre class="chunk-content-pre">{{ chunk.content }}</pre>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
+</template>
           </el-table-column>
           <el-table-column label="分块数" width="80">
             <template #default="{ row }">
               {{ row.chunk_count || 0 }}
-            </template>
+            
+  <!-- 解析详情弹窗 -->
+  <el-dialog v-model="chunkDialogVisible" class="chunk-dialog" :title="'解析详情 - ' + selectedCwTitle" width="750px" top="5vh" @close="chunksData=[]">
+    <div v-loading="chunksLoading">
+      <div v-if="!chunksLoading && chunksData.length === 0" style="text-align:center;padding:40px">
+        <el-empty description="暂无解析数据 / 课件尚未处理完成" />
+      </div>
+      <div v-for="(group, gIdx) in groupedChunks" :key="gIdx" style="margin-bottom:16px">
+        <h4 class="chunk-group-heading">
+          <el-icon style="vertical-align:-2px"><FolderOpened /></el-icon>
+          {{ group.heading }}
+        </h4>
+        <div v-for="chunk in group.chunks" :key="chunk.chunk_index" class="chunk-card">
+          <div class="chunk-meta">
+            <span class="chunk-index">#{{ chunk.chunk_index }}</span>
+            <el-tag size="small">{{ chunk.token_count }} tokens</el-tag>
+            <el-tag v-if="chunk.page_ref" size="small" type="info">第{{ chunk.page_ref }}页</el-tag>
+          </div>
+          <el-collapse>
+            <el-collapse-item title="查看完整内容" name="1">
+              <pre class="chunk-content-pre">{{ chunk.content }}</pre>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
+</template>
           </el-table-column>
           <el-table-column prop="status" label="状态" width="110">
             <template #default="{ row }">
               <el-tag :type="statusTag(row.status)" size="small" round>
                 {{ row.status }}
               </el-tag>
-            </template>
+            
+  <!-- 解析详情弹窗 -->
+  <el-dialog v-model="chunkDialogVisible" class="chunk-dialog" :title="'解析详情 - ' + selectedCwTitle" width="750px" top="5vh" @close="chunksData=[]">
+    <div v-loading="chunksLoading">
+      <div v-if="!chunksLoading && chunksData.length === 0" style="text-align:center;padding:40px">
+        <el-empty description="暂无解析数据 / 课件尚未处理完成" />
+      </div>
+      <div v-for="(group, gIdx) in groupedChunks" :key="gIdx" style="margin-bottom:16px">
+        <h4 class="chunk-group-heading">
+          <el-icon style="vertical-align:-2px"><FolderOpened /></el-icon>
+          {{ group.heading }}
+        </h4>
+        <div v-for="chunk in group.chunks" :key="chunk.chunk_index" class="chunk-card">
+          <div class="chunk-meta">
+            <span class="chunk-index">#{{ chunk.chunk_index }}</span>
+            <el-tag size="small">{{ chunk.token_count }} tokens</el-tag>
+            <el-tag v-if="chunk.page_ref" size="small" type="info">第{{ chunk.page_ref }}页</el-tag>
+          </div>
+          <el-collapse>
+            <el-collapse-item title="查看完整内容" name="1">
+              <pre class="chunk-content-pre">{{ chunk.content }}</pre>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
+</template>
           </el-table-column>
           <el-table-column label="上传时间" width="170">
-            <template #default="{ row }">{{ formatTime(row.uploaded_at) }}</template>
+            <template #default="{ row }">{{ formatTime(row.uploaded_at) }}
+  <!-- 解析详情弹窗 -->
+  <el-dialog v-model="chunkDialogVisible" class="chunk-dialog" :title="'解析详情 - ' + selectedCwTitle" width="750px" top="5vh" @close="chunksData=[]">
+    <div v-loading="chunksLoading">
+      <div v-if="!chunksLoading && chunksData.length === 0" style="text-align:center;padding:40px">
+        <el-empty description="暂无解析数据 / 课件尚未处理完成" />
+      </div>
+      <div v-for="(group, gIdx) in groupedChunks" :key="gIdx" style="margin-bottom:16px">
+        <h4 class="chunk-group-heading">
+          <el-icon style="vertical-align:-2px"><FolderOpened /></el-icon>
+          {{ group.heading }}
+        </h4>
+        <div v-for="chunk in group.chunks" :key="chunk.chunk_index" class="chunk-card">
+          <div class="chunk-meta">
+            <span class="chunk-index">#{{ chunk.chunk_index }}</span>
+            <el-tag size="small">{{ chunk.token_count }} tokens</el-tag>
+            <el-tag v-if="chunk.page_ref" size="small" type="info">第{{ chunk.page_ref }}页</el-tag>
+          </div>
+          <el-collapse>
+            <el-collapse-item title="查看完整内容" name="1">
+              <pre class="chunk-content-pre">{{ chunk.content }}</pre>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
+</template>
           </el-table-column>
-          <el-table-column label="操作" width="80" align="center">
+          <el-table-column label="操作" width="130" align="center">
             <template #default="{ row }">
+              <el-button text type="primary" size="small" @click="viewChunks(row)" style="margin-right:6px">详情</el-button>
               <el-tooltip content="删除" placement="top">
                 <el-button text type="danger" :icon="Delete" circle @click="deleteCw(row)" />
               </el-tooltip>
-            </template>
+            
+  <!-- 解析详情弹窗 -->
+  <el-dialog v-model="chunkDialogVisible" class="chunk-dialog" :title="'解析详情 - ' + selectedCwTitle" width="750px" top="5vh" @close="chunksData=[]">
+    <div v-loading="chunksLoading">
+      <div v-if="!chunksLoading && chunksData.length === 0" style="text-align:center;padding:40px">
+        <el-empty description="暂无解析数据 / 课件尚未处理完成" />
+      </div>
+      <div v-for="(group, gIdx) in groupedChunks" :key="gIdx" style="margin-bottom:16px">
+        <h4 class="chunk-group-heading">
+          <el-icon style="vertical-align:-2px"><FolderOpened /></el-icon>
+          {{ group.heading }}
+        </h4>
+        <div v-for="chunk in group.chunks" :key="chunk.chunk_index" class="chunk-card">
+          <div class="chunk-meta">
+            <span class="chunk-index">#{{ chunk.chunk_index }}</span>
+            <el-tag size="small">{{ chunk.token_count }} tokens</el-tag>
+            <el-tag v-if="chunk.page_ref" size="small" type="info">第{{ chunk.page_ref }}页</el-tag>
+          </div>
+          <el-collapse>
+            <el-collapse-item title="查看完整内容" name="1">
+              <pre class="chunk-content-pre">{{ chunk.content }}</pre>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
+</template>
           </el-table-column>
         </el-table>
         <el-empty v-if="!loading && !coursewareList.length" :image-size="80" description="暂无课件" />
       </div>
-    </template>
+    
+  <!-- 解析详情弹窗 -->
+  <el-dialog v-model="chunkDialogVisible" class="chunk-dialog" :title="'解析详情 - ' + selectedCwTitle" width="750px" top="5vh" @close="chunksData=[]">
+    <div v-loading="chunksLoading">
+      <div v-if="!chunksLoading && chunksData.length === 0" style="text-align:center;padding:40px">
+        <el-empty description="暂无解析数据 / 课件尚未处理完成" />
+      </div>
+      <div v-for="(group, gIdx) in groupedChunks" :key="gIdx" style="margin-bottom:16px">
+        <h4 class="chunk-group-heading">
+          <el-icon style="vertical-align:-2px"><FolderOpened /></el-icon>
+          {{ group.heading }}
+        </h4>
+        <div v-for="chunk in group.chunks" :key="chunk.chunk_index" class="chunk-card">
+          <div class="chunk-meta">
+            <span class="chunk-index">#{{ chunk.chunk_index }}</span>
+            <el-tag size="small">{{ chunk.token_count }} tokens</el-tag>
+            <el-tag v-if="chunk.page_ref" size="small" type="info">第{{ chunk.page_ref }}页</el-tag>
+          </div>
+          <el-collapse>
+            <el-collapse-item title="查看完整内容" name="1">
+              <pre class="chunk-content-pre">{{ chunk.content }}</pre>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
+</template>
 
     <el-empty v-else :image-size="120" description="请先选择一个课程" />
   </div>
+
+  <!-- 解析详情弹窗 -->
+  <el-dialog v-model="chunkDialogVisible" class="chunk-dialog" :title="'解析详情 - ' + selectedCwTitle" width="750px" top="5vh" @close="chunksData=[]">
+    <div v-loading="chunksLoading">
+      <div v-if="!chunksLoading && chunksData.length === 0" style="text-align:center;padding:40px">
+        <el-empty description="暂无解析数据 / 课件尚未处理完成" />
+      </div>
+      <div v-for="(group, gIdx) in groupedChunks" :key="gIdx" style="margin-bottom:16px">
+        <h4 class="chunk-group-heading">
+          <el-icon style="vertical-align:-2px"><FolderOpened /></el-icon>
+          {{ group.heading }}
+        </h4>
+        <div v-for="chunk in group.chunks" :key="chunk.chunk_index" class="chunk-card">
+          <div class="chunk-meta">
+            <span class="chunk-index">#{{ chunk.chunk_index }}</span>
+            <el-tag size="small">{{ chunk.token_count }} tokens</el-tag>
+            <el-tag v-if="chunk.page_ref" size="small" type="info">第{{ chunk.page_ref }}页</el-tag>
+          </div>
+          <el-collapse>
+            <el-collapse-item title="查看完整内容" name="1">
+              <pre class="chunk-content-pre">{{ chunk.content }}</pre>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Upload, Document, Delete } from '@element-plus/icons-vue'
+import { Upload, Document, Delete, FolderOpened } from '@element-plus/icons-vue'
 import { listCourses } from '../api/course'
-import { listCourseware, uploadCourseware, deleteCourseware } from '../api/courseware'
+import { listCourseware, uploadCourseware, deleteCourseware, getCoursewareChunks } from '../api/courseware'
 import { formatTime } from '../utils/formatTime'
 import { useUserStore } from '../stores/user'
 
@@ -162,6 +387,45 @@ async function deleteCw(row) {
     coursewareList.value = coursewareList.value.filter(c => c.id !== row.id)
   } catch { /* 取消或错误 */ }
 }
+
+const chunkDialogVisible = ref(false)
+const chunksLoading = ref(false)
+const chunksData = ref([])
+const selectedCwTitle = ref('')
+
+const groupedChunks = computed(() => {
+  const groups = []
+  let cur = null
+  for (const chunk of chunksData.value) {
+    const h = parseHeading(chunk.content)
+    if (!cur || cur.heading !== h) {
+      cur = { heading: h, chunks: [] }
+      groups.push(cur)
+    }
+    cur.chunks.push(chunk)
+  }
+  return groups
+})
+
+function parseHeading(text) {
+  const m = text.match(/^【([^】]+)】/)
+  return m ? m[1] : '未分段'
+}
+
+async function viewChunks(row) {
+  selectedCwTitle.value = row.title
+  chunkDialogVisible.value = true
+  chunksLoading.value = true
+  chunksData.value = []
+  try {
+    const res = await getCoursewareChunks(row.id)
+    chunksData.value = (res.data?.chunks || []).filter(c => c.content)
+  } catch {
+    chunksData.value = []
+  }
+  chunksLoading.value = false
+}
+
 </script>
 
 <style scoped>
@@ -202,3 +466,6 @@ async function deleteCw(row) {
 .cw-table-wrap { background: #fff; border-radius: 8px; }
 .file-cell { display: flex; align-items: center; gap: 8px; }
 </style>
+
+
+

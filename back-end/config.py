@@ -38,8 +38,8 @@ class Config:
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
 
     # 文档分块参数
-    CHUNK_SIZE = 500
-    CHUNK_OVERLAP = 50
+    CHUNK_SIZE = 1000
+    CHUNK_OVERLAP = 200
 
 
 class DevelopmentConfig(Config):
@@ -64,5 +64,3 @@ config_map = {
     'production': ProductionConfig,
     'testing': TestingConfig,
 }
-
-
