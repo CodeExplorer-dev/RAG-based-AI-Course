@@ -1,50 +1,12 @@
-"""文本工具 — 知识点提取（LLM 批量优先，jieba 分词 fallback）"""
-import re
+"""文本工具 — 知识点提取（LLM 批量提取）与 jieba 关键词抽取"""
 import json
-import os
 import logging
-
-# 确保 .env 已加载（Flask 在 python app.py 模式下可能未自动加载）
-from dotenv import load_dotenv
-load_dotenv()
+import re
 
 import jieba
-import jieba.posseg as pseg
+from utils.llm_client import llm_client
 
 logger = logging.getLogger(__name__)
-
-# ── 是否启用 LLM 知识点提取（可通过环境变量关闭，强制走 jieba） ──
-_LLM_ENABLED = os.environ.get('KNOWLEDGE_EXTRACT_LLM', 'true').lower() not in ('false', '0', 'no')
-
-# ── 加载自定义词典（jieba fallback 时使用，防止专业术语被切碎） ──
-_dict_path = os.path.join(os.path.dirname(__file__), 'knowledge_dict.txt')
-if os.path.exists(_dict_path):
-    jieba.load_userdict(_dict_path)
-
-# ── 停用词表 ──────────────────────────────────────────────
-_STOP_WORDS = {
-    # 虚词 / 代词
-    '的', '了', '是', '在', '和', '与', '也', '都', '被', '把',
-    '这', '那', '它', '他', '她', '们', '我', '你', '一个', '没有',
-    '不', '为', '就', '有', '对', '上', '中', '下', '到', '去',
-    '会', '可', '以', '能', '但', '而', '从', '或', '其', '将',
-    '什么', '怎么', '如何', '为什么', '怎样', '哪个', '哪些',
-    '这个', '那个', '这些', '那些', '一下', '一些', '什么用',
-    # 高频无意义词
-    '老师', '问题', '区别', '好像', '应该', '还是', '不太', '总是',
-    '是不是', '能不能', '试试', '下子', '有点', '不会', '不知道',
-    '想问', '问一下', '请问', '讲讲', '详细', '分别', '每个',
-    '如果', '可以', '比如', '这样', '也是', '用',
-    # 过于通用的词（作为知识点无意义）
-    '场景', '本质', '代码', '条件', '方法', '分析方法', '概念',
-    '关系', '过程', '思路', '原理', '角色', '关联', '功能',
-    '实现', '应用', '使用', '背后', '理解',
-    '设置', '做题', '搞不清楚', '区别', '什么区别',
-    '时候', '时候用',
-}
-
-# ── jieba 词性过滤：只保留实义词性 ───────────────────────
-_ALLOWED_POS = {'n', 'nz', 'vn', 'eng', 'l', 'j'}
 
 # ── LLM Prompts ──────────────────────────────────────────
 
@@ -65,14 +27,50 @@ _BATCH_EXTRACT_USER_PROMPT = (
 )
 
 
-def _extract_knowledge_points_batch_llm(question_texts, top_n=20):
-    """一次 LLM 调用批量提取所有提问的知识点并聚合计数"""
-    from utils.llm_client import llm_client
+# ── 公共接口 ──────────────────────────────────────────────
+
+def extract_keywords(text: str, max_count: int = 50) -> list:
+    """使用 jieba 从单段文本中提取关键词
+
+    Args:
+        text: 待提取的文本
+        max_count: 最多返回的关键词数量
+
+    Returns:
+        list[str] — 关键词列表（长度 >= 2 的词）
+    """
+    if not text:
+        return []
+    # 去掉标点和换行，保留中英文
+    cleaned = re.sub(r'[^一-鿿\w]', ' ', text)
+    words = jieba.lcut(cleaned)
+    # 过滤：长度 >= 2，且不是纯空白
+    filtered = [w.strip() for w in words if len(w.strip()) >= 2]
+    # 按频率排序取前 N 个
+    from collections import Counter
+    counter = Counter(filtered)
+    return [kw for kw, _ in counter.most_common(max_count)]
+
+
+def extract_knowledge_points(question_texts, top_n=20):
+    """从多个问题文本中提取知识点并聚合计数
+
+    所有问题一次批量发给 LLM，由 LLM 直接返回聚合后的知识点排行。
+
+    Args:
+        question_texts: list[str] — 每个问题拼接标题+内容后的文本
+        top_n: 返回前 N 条知识点
+
+    Returns:
+        list[dict] — [{'name': str, 'count': int}, ...] 按 count 降序
+    """
+    if not question_texts:
+        return []
 
     if not llm_client.api_key:
-        raise RuntimeError('LLM_API_KEY 未配置')
+        logger.warning('LLM_API_KEY 未配置，无法提取知识点')
+        return []
 
-    # 构建带编号的提问列表
     numbered = '\n'.join(
         f'{i+1}. {text}' for i, text in enumerate(question_texts)
     )
@@ -99,112 +97,18 @@ def _extract_knowledge_points_batch_llm(question_texts, top_n=20):
 
     try:
         items = json.loads(response)
-        if isinstance(items, list):
-            result = []
-            for item in items:
-                if isinstance(item, dict) and 'name' in item and 'count' in item:
-                    name = str(item['name']).strip()
-                    count = int(item['count'])
-                    if len(name) >= 2 and count > 0:
-                        result.append({'name': name, 'count': count})
-            return result[:top_n]
-        else:
+        if not isinstance(items, list):
             raise ValueError(f'LLM 返回非数组: {type(items)}')
+
+        result = []
+        for item in items:
+            if isinstance(item, dict) and 'name' in item and 'count' in item:
+                name = str(item['name']).strip()
+                count = int(item['count'])
+                if len(name) >= 2 and count > 0:
+                    result.append({'name': name, 'count': count})
+        return result[:top_n]
+
     except json.JSONDecodeError:
         logger.warning(f'LLM 返回非 JSON 格式: {response[:200]}')
-        raise
-
-
-def _extract_knowledge_points_jieba(question_texts, top_n=20):
-    """jieba 逐条分词 + 聚合计数（LLM 不可用时的 fallback）"""
-    counter = {}
-    for text in question_texts:
-        if not text:
-            continue
-
-        words = pseg.cut(text.strip())
-        seen = set()  # 同一提问中重复知识点只计 1 次
-        for w, flag in words:
-            w = w.strip()
-            if len(w) < 2 or len(w) > 20:
-                continue
-            if w in _STOP_WORDS:
-                continue
-            if w.isdigit():
-                continue
-            if re.fullmatch(r'[\s，。；：、？!！\-=+\[\]【】《》（）()\.,:;?!\'\"' '‘’“”…—]+', w):
-                continue
-            if flag not in _ALLOWED_POS:
-                continue
-            seen.add(w)
-
-        for kw in seen:
-            counter[kw] = counter.get(kw, 0) + 1
-
-    sorted_items = sorted(counter.items(), key=lambda x: (-x[1], -len(x[0])))
-    return [{'name': k, 'count': v} for k, v in sorted_items[:top_n]]
-
-
-# ── 公共接口 ──────────────────────────────────────────────
-
-def extract_keywords(text, max_count=8):
-    """提取关键词（jieba 分词，用于单条文本的快速提取）
-
-    Args:
-        text: 待提取文本
-        max_count: 最多返回关键词数量
-
-    Returns:
-        list[str] 关键词列表
-    """
-    if not text:
         return []
-
-    words = pseg.cut(text.strip())
-    freq = {}
-    for w, flag in words:
-        w = w.strip()
-        if len(w) < 2 or len(w) > 20:
-            continue
-        if w in _STOP_WORDS:
-            continue
-        if w.isdigit():
-            continue
-        if re.fullmatch(r'[\s，。；：、？!！\-=+\[\]【】《》（）()\.,:;?!\'\"' '‘’“”…—]+', w):
-            continue
-        if flag not in _ALLOWED_POS:
-            continue
-        freq[w] = freq.get(w, 0) + 1
-
-    sorted_kws = sorted(freq.items(), key=lambda x: (-x[1], -len(x[0])))
-    return [kw for kw, _ in sorted_kws[:max_count]]
-
-
-def extract_knowledge_points(question_texts, top_n=20):
-    """从多个问题文本中提取知识点并聚合计数
-
-    LLM 可用时：一次批量调用，秒级返回
-    LLM 不可用时：jieba 分词 + 词频聚合
-
-    Args:
-        question_texts: list[str] — 每个问题拼接标题+内容后的文本
-        top_n: 返回前 N 条知识点
-
-    Returns:
-        list[dict] — [{'name': str, 'count': int}, ...] 按 count 降序
-    """
-    global _LLM_ENABLED
-
-    if not question_texts:
-        return []
-
-    # 每次请求重新读取环境变量，允许运行时热切换
-    _LLM_ENABLED = os.environ.get('KNOWLEDGE_EXTRACT_LLM', 'true').lower() not in ('false', '0', 'no')
-
-    if _LLM_ENABLED:
-        try:
-            return _extract_knowledge_points_batch_llm(question_texts, top_n)
-        except Exception as e:
-            logger.warning(f'LLM 批量知识点提取失败，fallback 到 jieba: {e}')
-
-    return _extract_knowledge_points_jieba(question_texts, top_n)

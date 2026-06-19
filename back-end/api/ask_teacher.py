@@ -200,7 +200,8 @@ def knowledge_points():
         }), 200
 
     questions = Question.query.filter(
-        Question.course_id.in_(course_ids)
+        Question.course_id.in_(course_ids),
+        Question.status == 'pending'
     ).order_by(Question.created_at.desc()).all()
 
     if not questions:
