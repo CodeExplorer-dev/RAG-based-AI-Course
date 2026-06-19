@@ -1,7 +1,9 @@
-"""文本工具 — 知识点提取（LLM 批量提取）"""
+"""文本工具 — 知识点提取（LLM 批量提取）与 jieba 关键词抽取"""
 import json
 import logging
+import re
 
+import jieba
 from utils.llm_client import llm_client
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,29 @@ _BATCH_EXTRACT_USER_PROMPT = (
 
 
 # ── 公共接口 ──────────────────────────────────────────────
+
+def extract_keywords(text: str, max_count: int = 50) -> list:
+    """使用 jieba 从单段文本中提取关键词
+
+    Args:
+        text: 待提取的文本
+        max_count: 最多返回的关键词数量
+
+    Returns:
+        list[str] — 关键词列表（长度 >= 2 的词）
+    """
+    if not text:
+        return []
+    # 去掉标点和换行，保留中英文
+    cleaned = re.sub(r'[^一-鿿\w]', ' ', text)
+    words = jieba.lcut(cleaned)
+    # 过滤：长度 >= 2，且不是纯空白
+    filtered = [w.strip() for w in words if len(w.strip()) >= 2]
+    # 按频率排序取前 N 个
+    from collections import Counter
+    counter = Counter(filtered)
+    return [kw for kw, _ in counter.most_common(max_count)]
+
 
 def extract_knowledge_points(question_texts, top_n=20):
     """从多个问题文本中提取知识点并聚合计数

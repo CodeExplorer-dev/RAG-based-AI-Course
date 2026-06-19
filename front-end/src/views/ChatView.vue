@@ -45,17 +45,17 @@
           <div class="msg-bubble">
             <div class="msg-text" v-html="msg.displayContent || msg.content"></div>
             <div v-if="msg.sources?.length" class="msg-sources">
-  <div class="source-title">📎 参考来源</div>
-  <div v-for="(s, j) in msg.sources" :key="j" class="source-item">
-    <el-tooltip :content="s.courseware_title || '课件片段'" placement="top">
-      <el-tag size="small" round color="#e8f4fd" style="color:#1d7ab8;border:none;margin:1px 0">
-        <span v-if="s.heading">{{ s.heading }}</span>
-        <span v-else>片段 #{{ s.chunk_index }}</span>
-        <span v-if="s.page_ref" style="margin-left:4px;font-size:11px;opacity:0.7">p.{{ s.page_ref }}</span>
-      </el-tag>
-    </el-tooltip>
-  </div>
-</div>
+              <div class="source-title">📎 参考来源</div>
+              <div v-for="(s, j) in msg.sources" :key="j" class="source-item">
+                <el-tooltip :content="s.courseware_title || '课件片段'" placement="top">
+                  <el-tag size="small" round color="#e8f4fd" style="color:#1d7ab8;border:none;margin:1px 0">
+                    <span v-if="s.heading">{{ s.heading }}</span>
+                    <span v-else>片段 #{{ s.chunk_index }}</span>
+                    <span v-if="s.page_ref" style="margin-left:4px;font-size:11px;opacity:0.7">p.{{ s.page_ref }}</span>
+                  </el-tag>
+                </el-tooltip>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -103,8 +103,20 @@
 import { ref, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ChatDotRound, UserFilled, Promotion, Delete, Position } from '@element-plus/icons-vue'
+import { marked } from 'marked'
 import request from '../api/request'
 import { listCourses } from '../api/course'
+
+// 配置 marked
+marked.setOptions({
+  breaks: true,        // 换行符转换为 <br>
+  gfm: true,           // GitHub Flavored Markdown
+})
+
+function renderMarkdown(text) {
+  if (!text) return ''
+  return marked.parse(text)
+}
 
 const route = useRoute()
 const chatRef = ref(null)
@@ -164,7 +176,7 @@ async function sendMessage() {
         messages.value.push({
           role: 'assistant',
           content: answer,
-          displayContent: answer,
+          displayContent: renderMarkdown(answer),
           sources: sources
         })
         streamBuffer.value = ''
@@ -283,11 +295,98 @@ function scrollDown() {
   border-bottom-left-radius: 2px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.msg-text { white-space: pre-wrap; }
-.msg-sources { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-.msg-sources { margin-top: 10px; }
-.source-title { font-size: 13px; color: #909399; margin-bottom: 4px; font-weight: 500; }
-.source-item { display: inline-block; margin-right: 4px; }
+.msg-text { line-height: 1.8; }
+/* Markdown 元素样式 */
+.msg-text :deep(h1),
+.msg-text :deep(h2),
+.msg-text :deep(h3),
+.msg-text :deep(h4),
+.msg-text :deep(h5),
+.msg-text :deep(h6) {
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.msg-text :deep(h1) { font-size: 22px; }
+.msg-text :deep(h2) { font-size: 20px; }
+.msg-text :deep(h3) { font-size: 19px; }
+.msg-text :deep(h4) { font-size: 18px; }
+.msg-text :deep(p) { margin: 4px 0 8px 0; }
+.msg-text :deep(ul), .msg-text :deep(ol) { padding-left: 20px; margin: 4px 0 8px 0; }
+.msg-text :deep(li) { margin: 2px 0; }
+.msg-text :deep(li)::marker { color: #409eff; }
+.msg-text :deep(strong) { font-weight: 600; color: #1d2129; }
+.msg-text :deep(code) {
+  background: #f2f3f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 15px;
+  font-family: 'Consolas', 'Menlo', monospace;
+  color: #e83e8c;
+}
+.msg-text :deep(pre) {
+  background: #f6f8fa;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.msg-text :deep(pre code) {
+  background: none;
+  padding: 0;
+  color: #303133;
+  font-size: 14px;
+}
+.msg-text :deep(blockquote) {
+  border-left: 3px solid #409eff;
+  padding: 4px 12px;
+  margin: 8px 0;
+  background: #f0f6ff;
+  border-radius: 0 6px 6px 0;
+  color: #4e5969;
+}
+.msg-text :deep(table) {
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 15px;
+}
+.msg-text :deep(th), .msg-text :deep(td) {
+  border: 1px solid #e4e7ed;
+  padding: 6px 12px;
+  text-align: left;
+}
+.msg-text :deep(th) {
+  background: #f6f8fa;
+  font-weight: 600;
+}
+.msg-text :deep(hr) {
+  border: none;
+  border-top: 1px solid #e4e7ed;
+  margin: 12px 0;
+}
+.msg-text :deep(a) {
+  color: #409eff;
+  text-decoration: none;
+}
+.msg-text :deep(a:hover) {
+  text-decoration: underline;
+}
+.msg-sources {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.source-title {
+  width: 100%;
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.source-item { display: inline-block; }
 
 .chat-input-bar {
   flex-shrink: 0;
