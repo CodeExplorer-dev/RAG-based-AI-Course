@@ -27,12 +27,14 @@ def chunk_text(
     pages: list[dict],
     chunk_size: int = 1000,
     overlap: int = 200,
+    max_pages_per_chunk: int = 2,
 ) -> list[dict]:
     """对解析结果进行智能分块
     Args:
         pages:      [{'page_number': int, 'text': str, 'heading': str|None}, ...]
         chunk_size: 目标 token 数上限
         overlap:    滑动窗口重叠 token 数
+        max_pages_per_chunk: 单个 chunk 最多跨越的页数（默认 2，确保页码精度）
     Returns:
         [{'content': str, 'chunk_index': int, 'token_count': int, 'page_ref': str|None, 'heading': str|None}, ...]
     """
@@ -50,19 +52,20 @@ def chunk_text(
                 continue
             raw_segments.append({
                 'text': para,
-                'page_ref': str(page['page_number']),
+                'page_ref': str(page['page_number']) if page.get('page_number') is not None else None,
                 'heading': heading or page.get('heading'),
             })
 
     if not raw_segments:
         return chunks
 
-    # ── 第二阶段：聚合成 chunk，超限则滑动窗口 ──
+    # ── 第二阶段：聚合成 chunk，超限或跨页过多则切割 ──
     current_parts = []
     current_tokens = 0
+    current_pages = set()  # 当前 chunk 已包含的页号集合
 
     def flush():
-        nonlocal chunk_index, current_parts, current_tokens
+        nonlocal chunk_index, current_parts, current_tokens, current_pages
         if not current_parts:
             return
         content = '\n\n'.join(p['text'] for p in current_parts)
@@ -70,7 +73,7 @@ def chunk_text(
         last_h = current_parts[-1]['heading']
         heading = first_h or last_h
         page_ref = current_parts[0]['page_ref']
-        if current_parts[-1]['page_ref'] != page_ref:
+        if page_ref is not None and current_parts[-1]['page_ref'] != page_ref:
             page_ref = f"{page_ref}-{current_parts[-1]['page_ref']}"
         chunks.append({
             'content': content,
@@ -82,6 +85,7 @@ def chunk_text(
         chunk_index += 1
         current_parts = []
         current_tokens = 0
+        current_pages = set()
 
     for seg in raw_segments:
         seg_tokens = estimate_tokens(seg['text'])
@@ -96,10 +100,10 @@ def chunk_text(
                 # 调整终点：先按 token 估算，再对齐到最近的句子边界
                 estimated_end = pos + int(chunk_size * 1.5)
                 end = min(estimated_end, len(text))
-                chunk_text = text[pos:end]
-                chunk_tokens = estimate_tokens(chunk_text)
+                chunk_text_val = text[pos:end]
+                chunk_tokens = estimate_tokens(chunk_text_val)
                 chunks.append({
-                    'content': chunk_text,
+                    'content': chunk_text_val,
                     'chunk_index': chunk_index,
                     'token_count': chunk_tokens,
                     'page_ref': seg['page_ref'],
@@ -112,14 +116,26 @@ def chunk_text(
 
             continue
 
+        # 页边界控制：当前 chunk 已跨满 max_pages_per_chunk 页，且新段落来自新页 → 先 flush
+        seg_page = seg['page_ref']
+        is_new_page = seg_page is not None and seg_page not in current_pages
+        if is_new_page and len(current_pages) >= max_pages_per_chunk:
+            flush()
+
         # 正常合并
         if current_tokens + seg_tokens <= chunk_size:
             current_parts.append(seg)
             current_tokens += seg_tokens
+            if seg_page is not None:
+                current_pages.add(seg_page)
         else:
             flush()
             current_parts = [seg]
             current_tokens = seg_tokens
+            if seg_page is not None:
+                current_pages = {seg_page}
+            else:
+                current_pages = set()
 
     flush()
     return chunks

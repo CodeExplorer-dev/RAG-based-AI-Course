@@ -22,7 +22,7 @@ class DOCXParser:
                 body = '\n'.join(current_paras)
                 title = current_heading or '（前言）'
                 sections.append({
-                    'page_number': len(sections) + 1,
+                    'page_number': None,  # DOCX 无固定页码，不生成虚假页码
                     'text': f'【{title}】\n{body}',
                     'heading': title,
                 })
@@ -44,6 +44,6 @@ class DOCXParser:
         if not sections:
             ps = [p.text for p in doc.paragraphs if p.text.strip()]
             if ps:
-                return [{'page_number': 1, 'text': '\n\n'.join(ps), 'heading': None}]
+                return [{'page_number': None, 'text': '\n\n'.join(ps), 'heading': None}]
             return []
         return sections

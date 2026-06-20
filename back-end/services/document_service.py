@@ -31,7 +31,7 @@ def split_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> List[st
     if has_headings:
         # 已有结构化标记 → 用 chunk_text 分块
         pages = [{'page_number': 1, 'text': text, 'heading': None}]
-        structured_chunks = chunk_text(pages, chunk_size, overlap)
+        structured_chunks = chunk_text(pages, chunk_size, overlap, max_pages_per_chunk=2)
         return [c['content'] for c in structured_chunks]
 
     # 无标题标记 → 段落+句子级滑动窗口
@@ -129,8 +129,13 @@ class DocumentService:
             raise ValueError(f'不支持的文件类型: {file_type}')
 
     def process_document(self, courseware_id: int,
-                         chunk_size: int = 1000, chunk_overlap: int = 200):
-        """处理课件：提取文本 → 分块 → 写入 MySQL document_chunks 表"""
+                         chunk_size: int = 1000, chunk_overlap: int = 200,
+                         max_pages_per_chunk: int = 2):
+        """处理课件：提取文本 → 分块 → 写入 MySQL document_chunks 表
+
+        PDF/PPTX/DOCX：结构化解析（保留页码），经 chunk_text 分块
+        TXT/MD：纯文本提取，经 split_text 分块
+        """
         cw = db.session.get(Courseware, courseware_id)
         if not cw:
             raise NotFoundError('课件不存在')
@@ -139,24 +144,42 @@ class DocumentService:
             cw.status = 'processing'
             db.session.commit()
 
-            full_text, page_count = self.extract_text(cw.file_path, cw.file_type)
-            cw.page_count = page_count
+            if cw.file_type in ('pdf', 'ppt', 'pptx', 'doc', 'docx'):
+                # ── 结构化路径：保留页码 ──
+                parser = StructuredParser(cw.file_path)
+                pages = parser.extract()
+                cw.page_count = len(pages)
 
-            chunks = split_text(full_text, chunk_size, chunk_overlap)
+                structured_chunks = chunk_text(pages, chunk_size, chunk_overlap, max_pages_per_chunk)
+                for c in structured_chunks:
+                    chunk = DocumentChunk(
+                        courseware_id=courseware_id,
+                        chunk_index=c['chunk_index'],
+                        content=c['content'],
+                        token_count=c['token_count'],
+                        page_ref=c.get('page_ref'),
+                    )
+                    db.session.add(chunk)
+                cw.chunk_count = len(structured_chunks)
+            else:
+                # ── 纯文本路径（txt/md）：无页码 ──
+                full_text, page_count = self.extract_text(cw.file_path, cw.file_type)
+                cw.page_count = page_count
 
-            for idx, chunk_text_val in enumerate(chunks):
-                chunk = DocumentChunk(
-                    courseware_id=courseware_id,
-                    chunk_index=idx,
-                    content=chunk_text_val,
-                    token_count=estimate_tokens(chunk_text_val),
-                )
-                db.session.add(chunk)
+                chunks = split_text(full_text, chunk_size, chunk_overlap)
+                for idx, chunk_text_val in enumerate(chunks):
+                    chunk = DocumentChunk(
+                        courseware_id=courseware_id,
+                        chunk_index=idx,
+                        content=chunk_text_val,
+                        token_count=estimate_tokens(chunk_text_val),
+                    )
+                    db.session.add(chunk)
+                cw.chunk_count = len(chunks)
 
-            cw.chunk_count = len(chunks)
             cw.status = 'completed'
 
-            # 4. Generate embeddings
+            # 生成嵌入向量
             try:
                 idx_result = index_courseware(courseware_id)
                 logger.info(f'courseware embeddings done: {idx_result}')
@@ -164,7 +187,6 @@ class DocumentService:
                 logger.warning(f'embedding failed (non-fatal): {e}')
 
             db.session.commit()
-
 
         except Exception as e:
             cw.status = 'failed'
