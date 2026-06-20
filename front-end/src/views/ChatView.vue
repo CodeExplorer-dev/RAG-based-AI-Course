@@ -47,11 +47,24 @@
             <div v-if="msg.sources?.length" class="msg-sources">
               <div class="source-title">📎 参考来源</div>
               <div v-for="(s, j) in msg.sources" :key="j" class="source-item">
-                <el-tooltip :content="s.courseware_title || '课件片段'" placement="top">
-                  <el-tag size="small" round color="#e8f4fd" style="color:#1d7ab8;border:none;margin:1px 0">
-                    <span v-if="s.heading">{{ s.heading }}</span>
-                    <span v-else>片段 #{{ s.chunk_index }}</span>
-                    <span v-if="s.page_ref" style="margin-left:4px;font-size:11px;opacity:0.7">p.{{ s.page_ref }}</span>
+                <el-tooltip placement="top">
+                  <template #content>
+                    <div>课件：{{ s.courseware_title || '未知课件' }}</div>
+                    <div v-if="s.page_ref">第 {{ s.page_ref }} 页</div>
+                  </template>
+                  <el-tag size="small" round color="#e8f4fd" style="color:#1d7ab8;border:none;cursor:pointer">
+                    <template v-if="s.heading && s.page_ref">
+                      {{ s.heading }}（第{{ s.page_ref }}页）
+                    </template>
+                    <template v-else-if="s.page_ref">
+                      {{ s.courseware_title || '课件' }} · 第{{ s.page_ref }}页
+                    </template>
+                    <template v-else-if="s.heading">
+                      {{ s.heading }}
+                    </template>
+                    <template v-else>
+                      片段 #{{ s.chunk_index }}
+                    </template>
                   </el-tag>
                 </el-tooltip>
               </div>
