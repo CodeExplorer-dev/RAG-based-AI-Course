@@ -87,7 +87,6 @@
               <span class="user-name">{{ userStore.userInfo?.username || '用户' }}</span>
             </span>
             <template #dropdown>
-              <el-dropdown-item command="profile"><el-icon><User /></el-icon>个人中心</el-dropdown-item>
               <el-dropdown-item divided command="logout"><el-icon><SwitchButton /></el-icon>退出登录</el-dropdown-item>
             </template>
           </el-dropdown>
