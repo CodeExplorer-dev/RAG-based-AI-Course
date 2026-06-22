@@ -215,7 +215,7 @@ def generate_answer(question: str, course_id: int = None) -> dict:
 
     # 3. 调用 LLM
     try:
-        answer = llm_client.chat_with_context(question, [p['chunk'].content for p in results[:3]])
+        answer = llm_client.chat_with_context(question, context_text)
     except RuntimeError as e:
         logger.error(f'LLM 调用失败，返回检索摘要: {e}')
         # 降级：返回检索到的原文摘要
