@@ -45,20 +45,20 @@ class LLMClient:
             logger.error(f'LLM 请求失败: {e}')
             raise RuntimeError(f'LLM 请求失败: {e}')
 
-    def chat_with_context(self, question: str, context_chunks: list, system_prompt: str = None) -> str:
-        """基于检索到的上下文进行问答"""
+    def chat_with_context(self, question: str, context_text: str, system_prompt: str = None) -> str:
+        """基于检索到的上下文进行问答
+
+        Args:
+            question: 用户问题
+            context_text: 已构建好的上下文字符串（含章节标注和分隔符）
+            system_prompt: 自定义系统提示
+        """
         if system_prompt is None:
             system_prompt = (
                 '你是一个 AI 课程助教。请根据以下提供的课件内容片段回答用户的问题。'
                 '如果课件内容不足够回答问题，请如实告知，不要编造信息。'
                 '回答时请尽量清晰有条理，可以引用课件中的关键信息。'
             )
-
-        # 构建上下文
-        context_text = '\n\n---\n\n'.join([
-            f'[资料片段 {i+1}]\n{chunk}'
-            for i, chunk in enumerate(context_chunks)
-        ])
 
         messages = [
             {'role': 'system', 'content': system_prompt},
