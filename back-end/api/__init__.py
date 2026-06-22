@@ -22,4 +22,6 @@ def register_blueprints(app):
     app.register_blueprint(ask_teacher_bp, url_prefix='/api/ask-teacher')
     app.register_blueprint(teacher_bp, url_prefix='/api/teacher')
     app.register_blueprint(kg_bp, url_prefix='/api/knowledge-graph')
+    from api.notification import notification_bp
+    app.register_blueprint(notification_bp, url_prefix='/api/notifications')
     app.register_blueprint(stats_bp, url_prefix='/api/statistics')

@@ -11,6 +11,7 @@ from models.kp_courseware import KpCourseware
 from models.qa_conversation import QaConversation
 from models.qa_message import QaMessage
 from models.feedback import Feedback
+from models.notification import Notification
 
 __all__ = [
     'User',
@@ -26,4 +27,5 @@ __all__ = [
     'QaConversation',
     'QaMessage',
     'Feedback',
+    'Notification',
 ]

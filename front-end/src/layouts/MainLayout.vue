@@ -57,6 +57,30 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
+          <el-popover placement="bottom" :width="350" trigger="click" popper-class="noti-popover">
+            <template #reference>
+              <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="noti-badge" :max="99">
+                <el-button :icon="Bell" text class="noti-btn" />
+              </el-badge>
+            </template>
+            <div class="noti-panel">
+              <div class="noti-header">
+                <span class="noti-title">通知</span>
+                <el-button text size="small" @click="handleMarkAllRead">全部已读</el-button>
+              </div>
+              <div class="noti-list" v-if="notifications.length">
+                <div v-for="n in notifications" :key="n.id" class="noti-item" :class="{ unread: !n.is_read }" @click="handleMarkRead(n)">
+                  <div class="noti-dot" v-if="!n.is_read"></div>
+                  <div class="noti-body">
+                    <div class="noti-item-title">{{ n.title }}</div>
+                    <div class="noti-item-content">{{ n.content }}</div>
+                    <div class="noti-item-time">{{ n.created_at }}</div>
+                  </div>
+                </div>
+              </div>
+              <el-empty v-else :image-size="32" description="暂无通知" />
+            </div>
+          </el-popover>
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="user-info">
               <el-avatar :size="28" icon="UserFilled" :style="{ background: avatarColor }" />
@@ -81,11 +105,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { Notebook, FolderOpened, ChatDotRound, Message, Fold, UserFilled, SwitchButton, Odometer, User, Share, TrendCharts, DataAnalysis, Edit } from '@element-plus/icons-vue'
+import { Notebook, FolderOpened, ChatDotRound, Message, Fold, UserFilled, SwitchButton, Bell, Odometer, User, Share, TrendCharts, DataAnalysis, Edit } from '@element-plus/icons-vue'
 import { clearKnowledgePointsCache } from '../views/teacher/AnswerQuestionsView.vue'
+import { getUnreadCount, listNotifications, markAllRead, markRead } from '../api/notification'
 
 const route = useRoute()
 const router = useRouter()
@@ -96,6 +121,58 @@ const role = computed(() => userStore.userInfo?.role || 'student')
 const roleLabel = computed(() => ({ student: '学生', teacher: '教师', admin: '管理员' }[role.value] || '学生'))
 const roleTagType = computed(() => ({ student: 'info', teacher: 'success', admin: 'danger' }[role.value] || 'info'))
 const avatarColor = computed(() => ({ student: '#5b8def', teacher: '#67c23a', admin: '#f56c6c' }[role.value] || '#5b8def'))
+const unreadCount = ref(0)
+const notifications = ref([])
+
+onMounted(async () => {
+  await fetchUnreadCount()
+  setInterval(fetchUnreadCount, 30000)
+})
+
+async function fetchUnreadCount() {
+  try {
+    const res = await getUnreadCount()
+    unreadCount.value = res.data?.count || 0
+    if (unreadCount.value > 0) {
+      const listRes = await listNotifications()
+      notifications.value = listRes.data?.notifications || []
+    }
+  } catch {}
+}
+
+async function handleMarkAllRead() {
+  try {
+    await markAllRead()
+    unreadCount.value = 0
+    notifications.value = []
+  } catch {}
+}
+
+async function handleMarkRead(n) {
+  if (n.is_read) return
+  try {
+    await markRead(n.id)
+    n.is_read = true
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+  } catch {}
+  if (n.related_id) {
+    const role = userStore.userInfo?.role || "student"
+    if (n.type === "answer") {
+      router.push("/ask-teacher")
+    } else if (n.type === "question") {
+      router.push(role === "teacher" ? "/teacher/answer-questions" : "/ask-teacher")
+    }
+  }
+  if (n.related_id) {
+    const r = userStore.userInfo?.role || "student"
+    if (n.type === "answer") {
+      router.push("/ask-teacher")
+    } else if (n.type === "question") {
+      router.push(r === "teacher" ? "/teacher/answer-questions" : "/ask-teacher")
+    }
+  }
+}
+
 const homePath = computed(() => ({ student: '/courses', teacher: '/teacher/dashboard', admin: '/admin/dashboard' }[role.value] || '/courses'))
 
 const activeMenu = computed(() => {
@@ -120,6 +197,22 @@ function handleCommand(cmd) {
 
 <style scoped>
 .layout-container { height: 100vh; }
+.noti-badge { margin-right: 12px; }
+.noti-btn { border: none; font-size: 18px; color: #606266; }
+.noti-btn:hover { color: #409eff; background: #f0f5ff; }
+.noti-panel { max-height: 400px; overflow: hidden; display: flex; flex-direction: column; }
+.noti-header { display: flex; align-items: center; justify-content: space-between; padding: 0 0 10px; border-bottom: 1px solid #f0f0f0; }
+.noti-title { font-size: 15px; font-weight: 600; color: #1d2129; }
+.noti-list { flex: 1; overflow-y: auto; margin: 0 -12px; padding: 0; }
+.noti-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f5f5f5; transition: background 0.15s; }
+.noti-item:hover { background: #f5f7fa; }
+.noti-item.unread { background: #f0f7ff; }
+.noti-dot { width: 8px; height: 8px; border-radius: 50%; background: #409eff; flex-shrink: 0; margin-top: 6px; }
+.noti-body { flex: 1; min-width: 0; }
+.noti-item-title { font-size: 14px; color: #1d2129; line-height: 1.4; }
+.noti-item-time { font-size: 12px; color: #a8abb2; margin-top: 2px; }
+.noti-item-content { font-size: 13px; color: #606266; line-height: 1.4; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
 .layout-aside {
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);

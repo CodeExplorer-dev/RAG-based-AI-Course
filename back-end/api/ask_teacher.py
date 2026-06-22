@@ -44,6 +44,39 @@ def submit_question():
     db.session.add(question)
     db.session.commit()
 
+    # 通知课程教师
+    try:
+        from models.notification import Notification
+        from models import UserCourse
+        if course_id:
+            teachers = User.query.join(UserCourse, User.id == UserCourse.user_id).filter(
+                UserCourse.course_id == int(course_id), UserCourse.role == "teacher"
+            ).all()
+            for t in teachers:
+                noti = Notification(
+                    user_id=t.id,
+                    title="新的学生提问",
+                    content=f"学生提交了新问题「{title}」",
+                    type="question",
+                    related_id=question.id,
+                )
+                db.session.add(noti)
+        # 也通知管理员
+        admins = User.query.filter_by(role="admin").all()
+        for a in admins:
+            noti = Notification(
+                user_id=a.id,
+                title="新的学生提问",
+                content=f"学生提交了新问题「{title}」",
+                type="question",
+                related_id=question.id,
+            )
+            db.session.add(noti)
+        db.session.commit()
+    except Exception as e:
+        from flask import current_app
+        current_app.logger.warning(f"创建提问通知失败: {e}")
+
     return jsonify({
         'code': 200,
         'message': '问题已提交',
@@ -167,6 +200,17 @@ def answer_question(question_id):
     question.answered_by = user_id
     question.status = 'answered'
     question.answered_at = datetime.utcnow()
+
+    # 创建通知
+    from models.notification import Notification
+    noti = Notification(
+        user_id=question.student_id,
+        title='你的问题已获得回答',
+        content=f'老师回答了你的问题「{question.title}」\n回答: {(question.answer[:80] + "...") if len(question.answer or "") > 80 else (question.answer or "")}',
+        type='answer',
+        related_id=question.id,
+    )
+    db.session.add(noti)
     db.session.commit()
 
     return jsonify({
