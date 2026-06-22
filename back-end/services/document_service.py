@@ -186,6 +186,15 @@ class DocumentService:
             except Exception as e:
                 logger.warning(f'embedding failed (non-fatal): {e}')
 
+            # 自动提取知识点并构建知识图谱
+            try:
+                from services.knowledge_graph_service import extract_from_courseware, analyze_relationships
+                extract_from_courseware(courseware_id)
+                analyze_relationships(cw.course_id)
+                logger.info(f'Knowledge graph updated for course {cw.course_id}')
+            except Exception as e:
+                logger.warning(f'Knowledge graph extraction failed (non-fatal): {e}')
+
             db.session.commit()
 
         except Exception as e:

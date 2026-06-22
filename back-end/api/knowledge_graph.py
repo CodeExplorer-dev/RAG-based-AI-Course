@@ -1,100 +1,135 @@
-﻿from flask import Blueprint, jsonify
+"""知识图谱 API — 从 DB 读取知识点和关系，返回图谱数据"""
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from extensions import db
-from models import Course, Courseware, DocumentChunk
-import re
+from models import Course, KnowledgePoint, KnowledgePointRelation, KpCourseware, Courseware
+from services.knowledge_graph_service import build_course_graph
 
 kg_bp = Blueprint('knowledge_graph', __name__)
 
-_STOP_WORDS = {'的', '了', '是', '在', '和', '与', '也', '都', '被', '把',
-               '这', '那', '它', '他', '她', '们', '我', '你', '一个', '没有',
-               '不', '为', '就', '有', '对', '上', '中', '下', '到', '去',
-               '会', '可', '以', '能', '但', '而', '从', '或', '其', '将'}
+# ── 关系类型 → 中文标签 ──────────────────────────────────────
+
+RELATION_LABELS = {
+    'prerequisite': '先修',
+    'contains': '包含',
+    'related': '相关',
+    'extends': '延伸',
+    'applies': '应用',
+}
 
 
-def _extract_keywords(text, max_count=6):
-    """简单提取关键词（词频统计 + 长度过滤）"""
-    segments = re.split(r'[，。；：、？!！\n\r\s]+', text)
-    freq = {}
-    for seg in segments:
-        seg = seg.strip()
-        if len(seg) < 2 or len(seg) > 20 or seg in _STOP_WORDS:
-            continue
-        freq[seg] = freq.get(seg, 0) + 1
-    sorted_kws = sorted(freq.items(), key=lambda x: -x[1])
-    return [kw for kw, _ in sorted_kws[:max_count]]
+def _build_graph_data(course_id: int) -> dict:
+    """从 DB 构建图谱数据 {nodes, edges}"""
+    course = db.session.get(Course, course_id)
+    if not course:
+        return {'nodes': [], 'edges': []}
 
-
-@kg_bp.route('/detail/<int:course_id>', methods=['GET'])
-@jwt_required()
-def get_graph_detail(course_id):
-    """增强版知识图谱：提取知识点及其关系"""
-    c = db.session.get(Course, course_id)
-    if not c:
-        return jsonify({'code': 200, 'message': 'success', 'data': {'nodes': [], 'edges': []}}), 200
-
-    cws = Courseware.query.filter_by(course_id=course_id).all()
     nodes = []
     edges = []
 
-    # 课程根节点
-    nodes.append({'id': f'course_{c.id}', 'label': c.course_name, 'type': 'course', 'size': 28})
-    seen_labels = set()
+    # 1. 课程根节点
+    nodes.append({
+        'id': f'course_{course.id}',
+        'label': course.course_name,
+        'type': 'course',
+        'size': 30,
+        'level': 0,
+    })
 
-    for cw in cws:
-        cw_id = f'cw_{cw.id}'
-        nodes.append({'id': cw_id, 'label': cw.title, 'type': 'courseware', 'size': 22})
-        edges.append({'source': f'course_{c.id}', 'target': cw_id, 'label': '包含', 'type': 'contains'})
+    # 2. 知识点节点
+    kps = KnowledgePoint.query.filter_by(course_id=course_id).order_by(KnowledgePoint.level, KnowledgePoint.id).all()
+    kp_ids = set()
+    for kp in kps:
+        kp_ids.add(kp.id)
+        node_size = 15 + kp.importance * 6  # importance 1-5 → size 21-45
+        nodes.append({
+            'id': f'kp_{kp.id}',
+            'label': kp.name,
+            'type': f'knowledge_point_l{kp.level}',
+            'size': node_size,
+            'level': kp.level,
+            'importance': kp.importance,
+            'difficulty': kp.difficulty,
+            'description': kp.description,
+            'keywords': kp.keywords.split(',') if kp.keywords else [],
+            'kp_id': kp.id,
+        })
 
-        # 提取该课件中的知识点片段
-        chunks = DocumentChunk.query.filter_by(courseware_id=cw.id)\
-            .order_by(DocumentChunk.chunk_index).all()
-        all_text = ' '.join([ch.content for ch in chunks])
-        keywords = _extract_keywords(all_text, max_count=6)
+    # 3. 课件节点
+    coursewares = Courseware.query.filter_by(course_id=course_id).all()
+    for cw in coursewares:
+        nodes.append({
+            'id': f'cw_{cw.id}',
+            'label': cw.title,
+            'type': 'courseware',
+            'size': 22,
+            'level': 0,
+        })
+        # 课程 → 课件边
+        edges.append({
+            'source': f'course_{course.id}',
+            'target': f'cw_{cw.id}',
+            'label': '包含',
+            'type': 'contains',
+        })
 
-        kw_nodes = []
-        for kw in keywords:
-            if kw in seen_labels:
-                continue
-            seen_labels.add(kw)
-            kw_id = f'kw_{cw.id}_{kw[:10]}'
-            kw_nodes.append({'id': kw_id, 'label': kw, 'type': 'knowledge', 'size': 14})
+    # 4. 知识点 → 课件关联边
+    kp_cw_assocs = KpCourseware.query.filter(
+        KpCourseware.knowledge_point_id.in_(kp_ids)
+    ).all()
+    for assoc in kp_cw_assocs:
+        edges.append({
+            'source': f'kp_{assoc.knowledge_point_id}',
+            'target': f'cw_{assoc.courseware_id}',
+            'label': '来源',
+            'type': 'source',
+        })
 
-        nodes.extend(kw_nodes)
-        for kn in kw_nodes:
-            edges.append({
-                'source': cw_id,
-                'target': kn['id'],
-                'label': '知识点',
-                'type': 'knowledge'
-            })
+    # 5. 知识点关系边
+    relations = KnowledgePointRelation.query.filter(
+        KnowledgePointRelation.source_kp_id.in_(kp_ids)
+    ).all()
+    for rel in relations:
+        edges.append({
+            'source': f'kp_{rel.source_kp_id}',
+            'target': f'kp_{rel.target_kp_id}',
+            'label': RELATION_LABELS.get(rel.relation_type, rel.relation_type),
+            'type': rel.relation_type,
+            'weight': rel.weight,
+            'description': rel.description,
+        })
 
-        # 课件间顺序关系
-        idx = cws.index(cw)
-        if idx > 0:
-            prev_id = f'cw_{cws[idx - 1].id}'
-            edges.append({
-                'source': prev_id,
-                'target': cw_id,
-                'label': '下一篇',
-                'type': 'sequence'
-            })
+    return {'nodes': nodes, 'edges': edges}
 
-    return jsonify({'code': 200, 'message': 'success', 'data': {'nodes': nodes, 'edges': edges}}), 200
 
+# ── 路由 ─────────────────────────────────────────────────────
 
 @kg_bp.route('/<int:course_id>', methods=['GET'])
 @jwt_required()
 def get_graph(course_id):
-    """基础版知识图谱"""
-    c = db.session.get(Course, course_id)
-    if not c:
-        return jsonify({'code': 200, 'message': 'success', 'data': {'nodes': [], 'edges': []}}), 200
-    cws = Courseware.query.filter_by(course_id=course_id).all()
-    nodes = [{'id': 'course', 'label': c.course_name, 'type': 'course', 'size': 28}]
-    edges = []
-    for cw in cws:
-        nid = 'cw_' + str(cw.id)
-        nodes.append({'id': nid, 'label': cw.title, 'type': 'courseware', 'size': 22})
-        edges.append({'source': 'course', 'target': nid, 'label': '包含'})
-    return jsonify({'code': 200, 'message': 'success', 'data': {'nodes': nodes, 'edges': edges}}), 200
+    """获取课程知识图谱数据"""
+    data = _build_graph_data(course_id)
+    return jsonify({'code': 200, 'message': 'success', 'data': data}), 200
+
+
+@kg_bp.route('/build/<int:course_id>', methods=['POST'])
+@jwt_required()
+def build_graph(course_id):
+    """手动触发知识图谱构建（重建）"""
+    course = db.session.get(Course, course_id)
+    if not course:
+        return jsonify({'code': 404, 'message': '课程不存在', 'data': None}), 404
+
+    try:
+        result = build_course_graph(course_id)
+        return jsonify({
+            'code': 200,
+            'message': '知识图谱构建完成',
+            'data': result,
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'code': 500,
+            'message': f'知识图谱构建失败: {str(e)}',
+            'data': None,
+        }), 500

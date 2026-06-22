@@ -5,6 +5,9 @@ from models.courseware import Courseware
 from models.document_chunk import DocumentChunk
 from models.question import Question
 from models.student_question import StudentQuestion
+from models.knowledge_point import KnowledgePoint
+from models.knowledge_point_relation import KnowledgePointRelation
+from models.kp_courseware import KpCourseware
 
 __all__ = [
     'User',
@@ -14,4 +17,7 @@ __all__ = [
     'DocumentChunk',
     'Question',
     'StudentQuestion',
+    'KnowledgePoint',
+    'KnowledgePointRelation',
+    'KpCourseware',
 ]
