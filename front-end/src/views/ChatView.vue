@@ -100,6 +100,14 @@
                 </div>
               </div>
               <div v-if="msg.role === 'assistant'" class="msg-actions">
+                <button class="msg-action-btn" :class="{ liked: msg.feedback === 'like' }"
+                  @click="sendFeedback(msg, 'like')" title="有用">
+                  <el-icon :size="14"><CircleCheck /></el-icon>
+                </button>
+                <button class="msg-action-btn" :class="{ disliked: msg.feedback === 'dislike' }"
+                  @click="sendFeedback(msg, 'dislike')" title="无用">
+                  <el-icon :size="14"><CloseBold /></el-icon>
+                </button>
                 <button class="msg-action-btn" @click="copyMessage(msg.content)" title="复制回答">
                   <el-icon :size="14"><DocumentCopy /></el-icon>
                 </button>
@@ -161,7 +169,7 @@ import { useRoute } from "vue-router"
 import {
   ChatDotRound, ChatSquare, ChatLineRound,
   Promotion, Delete, Position, Plus, Search,
-  Fold, Expand, Link, DocumentCopy, Notebook
+  Fold, Expand, Link, DocumentCopy, Notebook, CircleCheck, CloseBold
 } from "@element-plus/icons-vue"
 import { marked } from "marked"
 import request from "../api/request"
@@ -253,6 +261,8 @@ async function switchConversation(conv) {
         role: m.role, content: m.content,
         displayContent: m.role === "assistant" ? renderMarkdown(m.content) : m.content,
         sources: m.referenced_chunks || [],
+        feedback: null,
+        messageId: m.id,
       }))
     }
     selectedCourseId.value = res.data.course_id || null
@@ -312,7 +322,8 @@ async function sendMessage() {
         streaming.value = false
         messages.value.push({
           role: "assistant", content: answer,
-          displayContent: renderMarkdown(answer), sources
+          displayContent: renderMarkdown(answer), sources,
+          feedback: null, messageId: res.data?.message_id || null
         })
         streamBuffer.value = ""; scrollDown()
         fetchConversations()
@@ -323,6 +334,17 @@ async function sendMessage() {
     messages.value.push({ role: "assistant", content: "抱歉，暂时无法回答，请稍后再试。", sources: [] })
     scrollDown()
   }
+}
+
+async function sendFeedback(msg, type) {
+  if (msg.feedback === type) { msg.feedback = null; return }
+  msg.feedback = type
+  try {
+    await request.post("/api/chat/feedback", {
+      message_id: msg.messageId,
+      type: type,
+    })
+  } catch { msg.feedback = null }
 }
 
 function copyMessage(text) { navigator.clipboard.writeText(text).catch(() => {}) }
@@ -419,6 +441,8 @@ function scrollDown() { nextTick(() => chatRef.value?.scrollTo({ top: chatRef.va
 .msg-row.assistant:hover .msg-actions { opacity: 1; }
 .msg-action-btn { width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent; color: #a8abb2; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
 .msg-action-btn:hover { background: #f0f2f5; color: #409eff; }
+.msg-action-btn.liked { color: #67c23a; background: #f0f9eb; }
+.msg-action-btn.disliked { color: #f56c6c; background: #fef0f0; }
 .chat-input-bar { flex-shrink: 0; padding: 16px 20px 14px; border-top: 1px solid #f2f3f5; background: #fff; }
 .input-wrapper { display: flex; align-items: flex-end; gap: 8px; background: #f5f7fa; border-radius: 12px; padding: 8px 8px 8px 16px; border: 1px solid #e4e7ed; transition: all 0.2s; }
 .input-wrapper:focus-within { border-color: #409eff; box-shadow: 0 0 0 2px rgba(64,158,255,0.12); background: #fff; }
