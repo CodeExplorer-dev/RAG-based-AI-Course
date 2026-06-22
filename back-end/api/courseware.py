@@ -3,7 +3,7 @@ import os
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions import db
-from models import User, UserCourse, Courseware, DocumentChunk, Course
+from models import User, UserCourse, Courseware, DocumentChunk, Course, KpCourseware
 from services.document_service import document_service
 from utils.errors import ForbiddenError, NotFoundError
 
@@ -150,7 +150,10 @@ def delete_courseware(courseware_id):
         except OSError:
             pass
 
-    # 删除分块记录
+    # 删除知识点-课件关联记录
+    KpCourseware.query.filter_by(courseware_id=courseware_id).delete()
+
+    # 删除分块记录（数据库 ON DELETE SET NULL 会将 kp_courseware.chunk_id 置空）
     DocumentChunk.query.filter_by(courseware_id=courseware_id).delete()
 
     # 删除课件记录
