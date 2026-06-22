@@ -180,7 +180,7 @@ function renderGraph() {
     layout: { improvedLayout: true, hierarchical: { enabled: false } },
     physics: {
       solver: 'barnesHut',
-      barnesHut: { gravitationalConstant: -3000, springLength: 200, springConstant: 0.04 },
+      barnesHut: { gravitationalConstant: -8000, springLength: 400, springConstant: 0.015 },
       stabilization: { iterations: 200 }
     },
     interaction: { hover: true, tooltipDelay: 200, zoomView: true, dragView: true },
