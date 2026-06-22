@@ -56,9 +56,6 @@ def delete_conversation(conv_id):
     db.session.commit()
     return jsonify({"code": 200, "message": "会话已删除", "data": None}), 200
 
-
-# ─── AI 问答（RAG + 持久化） ──────────────────────────
-
 @chat_bp.route("", methods=["POST"])
 @jwt_required()
 def chat():
@@ -109,10 +106,32 @@ def chat():
     )
     db.session.add(user_msg)
     db.session.flush()
+    more_detailed = False  # 踩过则生成更详细答案
+    # ♾ 缓存查询
+    try:
+        prev = QaMessage.query.filter(QaMessage.role=="user", QaMessage.content==message).order_by(QaMessage.created_at.desc()).limit(10).all()
+        for p in prev:
+            if p.conversation_id == conv.id: continue
+            ai = QaMessage.query.filter(QaMessage.conversation_id==p.conversation_id, QaMessage.role=="assistant", QaMessage.created_at>p.created_at).order_by(QaMessage.created_at).first()
+            if ai and ai.content:
+                bad = Feedback.query.filter(Feedback.message_id==ai.id, Feedback.feedback_type=="not_helpful").count() > 0
+                if not bad:
+                    logger.info(f"Cache hit: same question -> reuse msg={ai.id}")
+                    rt = int((time.time()-t0)*1000)
+                    cp = QaMessage(conversation_id=conv.id,role="assistant",content=ai.content,referenced_chunks=ai.referenced_chunks,response_time_ms=rt)
+                    db.session.add(cp); db.session.flush()
+                    conv.message_count = (conv.message_count or 0) + 1
+                    conv.updated_at = datetime.utcnow(); db.session.commit()
+                    return jsonify({"code":200,"message":"success","data":{"conversation_id":conv.id,"conversation_title":conv.title,"message_id":cp.id,"answer":ai.content,"sources":ai.referenced_chunks or [],"chunk_count":len(ai.referenced_chunks or []),"search_mode":"cache","response_time_ms":rt,"cached":True}}),200
+                else:
+                    more_detailed = True
+    except Exception as e:
+        logger.warning(f"Cache lookup failed: {e}")
+
 
     # ── 执行 RAG 管线 ──
     try:
-        result = generate_answer(message, course_id=int(course_id) if course_id else None)
+        result = generate_answer(message, course_id=int(course_id) if course_id else None, detailed=more_detailed)
         response_time_ms = int((time.time() - t0) * 1000)
     except Exception as e:
         logger.error(f"RAG 管线异常: {e}")
@@ -150,6 +169,7 @@ def chat():
         "data": {
             "conversation_id": conv.id,
             "conversation_title": conv.title,
+            "message_id": ai_msg.id,
             "answer": answer_text,
             "sources": result.get("sources", [])[:5],
             "chunk_count": result.get("chunk_count", 0),
