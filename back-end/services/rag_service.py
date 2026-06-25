@@ -151,7 +151,9 @@ def index_courseware(courseware_id: int) -> dict:
             tf = chunk.content.count(kw)
             idf = math.log(len(all_keywords) / (sum(1 for k in all_keywords if k in kw_set) + 1) + 1)
             vec.append(tf * idf if tf > 0 else 0.0)
-        chunk.vector_id = json.dumps(vec, ensure_ascii=False)
+        # ????????? JSON ??? MySQL TEXT ??
+        # ?? TF-IDF ????? vector_id???? jieba ?? content
+        chunk.vector_id = "tfidf"
         db.session.add(chunk)
         updated += 1
 
@@ -168,6 +170,7 @@ def _get_courseware_course_id(courseware_id):
 # 第三部分：语义检索（ChromaDB + Fallback）
 # ═══════════════════════════════════════════════════
 
+_last_search_mode = "none"
 def _extract_heading(content: str) -> str:
     m = re.match(r"^\u3010([^\u3011]+)\u3011", content)
     if m:
@@ -268,10 +271,13 @@ def _keyword_search(query: str, course_id: int = None, top_k: int = TOP_K_RETRIE
 
 
 def search(query: str, course_id: int = None, top_k: int = TOP_K_RETRIEVAL) -> list:
+    global _last_search_mode
     """\u901a\u7528\u68c0\u7d22 API\uff1a\u4f18\u5148 ChromaDB\uff0c\u5931\u8d25\u964d\u7ea7\u4e3a\u5173\u952e\u8bcd"""
     results = _chroma_search(query, course_id, top_k)
     if results is not None:
+        _last_search_mode = "chromadb"
         return results
+    _last_search_mode = "keyword"
     return _keyword_search(query, course_id, top_k)
 
 
@@ -316,7 +322,7 @@ def generate_answer(question: str, course_id: int = None, detailed: bool = False
             answer = llm_client.chat_with_context(question, [p["chunk"].content for p in results[:3]], system_prompt=detailed_prompt)
         else:
             answer = llm_client.chat_with_context(question, [p["chunk"].content for p in results[:3]])
-        search_mode = "chromadb" if any(r["chunk"].vector_id and len(r["chunk"].vector_id) < 50 for r in results) else "chromadb"
+        search_mode = _last_search_mode
     except RuntimeError as e:
         logger.error(f"LLM \u8c03\u7528\u5931\u8d25: {e}")
         answer = (
