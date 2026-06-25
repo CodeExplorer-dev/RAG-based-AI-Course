@@ -382,7 +382,9 @@ function scrollDown() { nextTick(() => chatRef.value?.scrollTo({ top: chatRef.va
 .chat-page { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05); position: relative; }
 .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #f2f3f5; flex-shrink: 0; background: #fff; }
 .chat-header-info { display: flex; align-items: center; gap: 10px; }
-.chat-header-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #409eff, #337ecc); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; }
+.chat-header-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #409eff, #337ecc); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; position: relative; box-shadow: 0 0 0 1px rgba(255,255,255,0.3), 0 2px 12px rgba(64,158,255,0.3); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.chat-header-icon::before { content: ''; position: absolute; inset: -3px; border-radius: 11px; background: linear-gradient(135deg, #4a7cff, #7c5ce7, #4a7cff); background-size: 300% 300%; animation: hdr-icon-ring 3s ease infinite; z-index: -1; }
+.chat-header:hover .chat-header-icon { transform: scale(1.1) rotate(-5deg); box-shadow: 0 0 0 2px rgba(255,255,255,0.5), 0 4px 20px rgba(64,158,255,0.4); }
 .chat-header-text { display: flex; flex-direction: column; }
 .chat-header-title { font-size: 17px; font-weight: 600; color: #1d2129; line-height: 1.3; }
 .chat-header-sub { font-size: 12px; color: #a8abb2; line-height: 1.2; }
@@ -465,4 +467,5 @@ function scrollDown() { nextTick(() => chatRef.value?.scrollTo({ top: chatRef.va
 .thinking-dots .dot:nth-child(2) { animation-delay: 0.2s; }
 .thinking-dots .dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity: 0.3; } 30% { transform: translateY(-6px); opacity: 1; } }
+@keyframes hdr-icon-ring { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 </style>
